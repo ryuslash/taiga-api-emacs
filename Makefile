@@ -9,5 +9,4 @@ all: lisp/taiga-api.elc
 	$(CASK_EXEC) $(EMACS) -Q -batch -L lisp/ -f batch-byte-compile $^
 
 test:
-	$(CASK_EXEC) $(EMACS) -Q -batch -l ert -L lisp/ -L tests/ \
-		-l taiga-api-tests.el -f ert-run-tests-batch-and-exit
+	$(CASK_EXEC) ert-runner -L lisp/
