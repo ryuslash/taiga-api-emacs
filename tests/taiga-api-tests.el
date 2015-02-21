@@ -27,7 +27,7 @@
 (require 'ert)
 (require 'undercover)
 
-(undercover "lisp/*.el" (:report-file "/tmp/undercover-report.json"))
+(undercover "lisp/*.el")
 
 (require 'taiga-api)
 
