@@ -26,6 +26,7 @@
 
 (require 'json)
 (require 'url)
+(require 'cl-lib)
 
 (defgroup taiga-api nil
   "Customization group for Taiga API"
