@@ -36,8 +36,9 @@
   :group 'taiga-api
   :type 'string)
 
-(define-error 'taiga-api-login-failed
-  "Could not login to your Taiga instance.")
+(when (fboundp 'define-error)
+  (define-error 'taiga-api-login-failed
+    "Could not login to your Taiga instance."))
 
 (cl-defstruct (taiga-error
                (:constructor taiga-error-from-alist
