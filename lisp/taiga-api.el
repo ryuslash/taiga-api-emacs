@@ -41,6 +41,17 @@
   (define-error 'taiga-api-login-failed
     "Could not login to your Taiga instance."))
 
+(unless (fboundp 'alist-get)
+  ;; Copied from subr.el in Emacs 25.0.50.1 (from 2015-02-15)
+  (defun alist-get (key alist &optional default remove)
+    "Get the value associated to KEY in ALIST.
+DEFAULT is the value to return if KEY is not found in ALIST.
+REMOVE, if non-nil, means that when setting this element, we should
+remove the entry if the new value is `eql' to DEFAULT."
+    (ignore remove) ;;Silence byte-compiler.
+    (let ((x (assq key alist)))
+      (if x (cdr x) default))))
+
 (cl-defstruct (taiga-error
                (:constructor taiga-error-from-alist
                              (alist
