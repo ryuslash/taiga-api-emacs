@@ -27,8 +27,7 @@
 (require 'ert)
 (require 'undercover)
 
-(let ((f (concat (file-name-directory (directory-file-name (file-name-directory load-file-name))) "lisp/*.el*")))
-  (undercover f (:report-file "/tmp/undercover-report.json")))
+(undercover "lisp/*.el" (:report-file "/tmp/undercover-report.json"))
 
 (require 'taiga-api)
 
