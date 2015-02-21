@@ -10,4 +10,4 @@ all: lisp/taiga-api.elc
 
 test:
 	$(CASK_EXEC) $(EMACS) -Q -batch -l ert -L lisp/ -L tests/ \
-		-l taiga-api-tests.el -f ert-run-tests-batch-and-exit
+		-l taiga-api-tests.el -eval "(ert t)" # -f ert-run-tests-batch-and-exit

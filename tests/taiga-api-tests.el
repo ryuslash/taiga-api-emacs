@@ -26,8 +26,8 @@
 
 (require 'ert)
 
-(when (require 'undercover nil t)
-  (undercover "*.el"))
+(require 'undercover)
+(undercover "*.el" "lisp/*.el" "../lisp/*.el" (:exclude "*-tests.el") (:report-file "test.json"))
 
 (require 'taiga-api)
 
