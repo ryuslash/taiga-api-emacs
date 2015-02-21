@@ -17,4 +17,4 @@ env:
   - EMACS=emacs-snapshot
 script:
   - emacs --version
-  - make && make test
+  - make test
