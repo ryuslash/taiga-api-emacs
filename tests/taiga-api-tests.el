@@ -25,10 +25,11 @@
 ;;; Code:
 
 (require 'ert)
-(require 'taiga-api)
 
 (when (require 'undercover nil t)
-  (undercover "taiga-api.el"))
+  (undercover "*.el"))
+
+(require 'taiga-api)
 
 (ert-deftest taiga-error-from-alist ()
   "Check that `taiga-error-from-alist' works properly."
