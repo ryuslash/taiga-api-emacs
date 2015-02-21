@@ -1,0 +1,3 @@
+* taiga-api-emacs
+
+  A client library for the [[https://taiga.io][Taiga]] API written in Emacs Lisp.
