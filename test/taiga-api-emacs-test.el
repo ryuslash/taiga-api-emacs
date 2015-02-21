@@ -1,4 +1,4 @@
-;;; taiga-api-tests.el --- Tests for the Taiga API client implementation  -*- lexical-binding: t; -*-
+;;; taiga-api-emacs-test.el --- Tests for the Taiga API client implementation  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015  Tom Willemse
 
@@ -23,11 +23,6 @@
 ;; Tests for the Taiga API client library implementation.
 
 ;;; Code:
-
-(require 'ert)
-(require 'undercover)
-
-(undercover "lisp/*.el")
 
 (require 'taiga-api)
 
@@ -96,5 +91,5 @@
     (should (taiga-user-p
              (taiga-api-normal-login "foo" "bar")))))
 
-(provide 'taiga-api-tests)
-;;; taiga-api-tests.el ends here
+(provide 'taiga-api-emacs-test)
+;;; taiga-api-emacs-test.el ends here
