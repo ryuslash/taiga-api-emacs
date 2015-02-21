@@ -27,6 +27,9 @@
 (require 'ert)
 (require 'taiga-api)
 
+(when (require 'undercover nil t)
+  (undercover "taiga-api.el"))
+
 (ert-deftest taiga-error-from-alist ()
   "Check that `taiga-error-from-alist' works properly."
   (let ((err (taiga-error-from-alist '((_error_message . "foo")

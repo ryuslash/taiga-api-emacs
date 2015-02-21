@@ -1,7 +1,13 @@
+EMACS = emacs
+CASK_EXEC = cask exec
+
 .PHONY: all test
 
-all:
-	$(MAKE) -C lisp/
+all: lisp/taiga-api.elc
+
+%.elc: %.el
+	$(CASK_EXEC) $(EMACS) -Q -batch -L lisp/ -f batch-byte-compile $^
 
 test:
-	$(MAKE) -C tests/ test
+	$(CASK_EXEC) $(EMACS) -Q -batch -l ert -L lisp/ -L tests/ \
+		-l taiga-api-tests.el -f ert-run-tests-batch-and-exit
