@@ -27,7 +27,7 @@
 (require 'ert)
 (require 'undercover)
 
-(undercover "*.el*" (:exclude "*-tests.el*"))
+(undercover "lisp/*.el*")
 
 (require 'taiga-api)
 
