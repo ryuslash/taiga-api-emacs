@@ -1,3 +1,11 @@
 * taiga-api-emacs
 
+  #+BEGIN_HTML
+    <a href='https://coveralls.io/r/ryuslash/taiga-api-emacs'><img src='https://coveralls.io/repos/ryuslash/taiga-api-emacs/badge.svg?branch=master' alt='Coverage Status' /></a>
+  #+END_HTML
+
+  #+BEGIN_HTML
+    <img src="https://travis-ci.org/ryuslash/taiga-api-emacs.svg?branch=master" alt="Build status">
+  #+END_HTML
+
   A client library for the [[https://taiga.io][Taiga]] API written in Emacs Lisp.
