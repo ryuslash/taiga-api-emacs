@@ -18,3 +18,4 @@ env:
 script:
   - emacs --version
   - make && make test
+  - cat /tmp/undercover-report.json
