@@ -25,6 +25,10 @@
 ;;; Code:
 
 (require 'ert)
+
+(require 'undercover)
+(undercover "*.el" "lisp/*.el" "../lisp/*.el" (:exclude "*-tests.el"))
+
 (require 'taiga-api)
 
 (ert-deftest taiga-error-from-alist ()
