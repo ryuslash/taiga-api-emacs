@@ -1,7 +1,7 @@
 EMACS = emacs
 CASK_EXEC = cask exec
 
-.PHONY: all test
+.PHONY: all test clean
 
 all: lisp/taiga-api.elc
 
@@ -10,3 +10,6 @@ all: lisp/taiga-api.elc
 
 test:
 	$(CASK_EXEC) ert-runner -L lisp/
+
+clean:
+	rm lisp/taiga-api.elc
