@@ -39,7 +39,10 @@
 
 (when (fboundp 'define-error)
   (define-error 'taiga-api-login-failed
-    "Could not login to your Taiga instance."))
+    "Could not login to your Taiga instance")
+
+  (define-error 'taiga-api-throttled
+    "Your API connection has been throttled"))
 
 (unless (fboundp 'alist-get)
   ;; Copied from subr.el in Emacs 25.0.50.1 (from 2015-02-15)
@@ -90,6 +93,13 @@ remove the entry if the new value is `eql' to DEFAULT."
     (search-forward "\n\n")
     (funcall constructor (json-read))))
 
+(defun taiga-api--get-status-code ()
+  "Get the HTTP status code in the current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (if (re-search-forward "^HTTP/.+ \\([0-9]+\\)" nil :noerror)
+        (string-to-number (match-string 1)))))
+
 (defun taiga-api-normal-login (username password)
   "Login a user USERNAME using PASSWORD."
   (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
@@ -99,12 +109,16 @@ remove the entry if the new value is `eql' to DEFAULT."
                                          ("password" . ,password)))))
     (with-current-buffer
         (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
-      (goto-char (point-min))
-      (re-search-forward "^HTTP/.+ \\([0-9]+\\)")
-      (if (string= (match-string 1) "200")
-          (taiga-api--get-object #'taiga-user-from-alist)
-        (signal 'taiga-api-login-failed
-                (taiga-api--get-object #'taiga-error-from-alist))))))
+      (let ((status (taiga-api--get-status-code)))
+        (cl-case status
+          (200
+           (taiga-api--get-object #'taiga-user-from-alist))
+          (400
+           (signal 'taiga-api-login-failed
+                   (taiga-api--get-object #'taiga-error-from-alist)))
+          (429
+           (signal 'taiga-api-throttled
+                   (taiga-api--get-object #'taiga-error-from-alist))))))))
 
 (defun taiga-api-github-login (code &optional token)
   "Login a user through github using CODE.
@@ -118,12 +132,15 @@ TOKEN can be used to accept an invitation to a project."
           (url-request-data (json-encode params)))
       (with-current-buffer
           (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
-        (goto-char (point-min))
-        (re-search-forward "^HTTP/.+ \\([0-9]+\\)")
-        (if (string= (match-string 1) "200")
-            (taiga-api--get-object #'taiga-user-from-alist)
-          (signal 'taiga-api-login-failed
-                  (taiga-api--get-object #'taiga-error-from-alist)))))))
+        (let ((status (taiga-api--get-status-code)))
+          (cl-ecase status
+            (200 (taiga-api--get-object #'taiga-user-from-alist))
+            (400
+             (signal 'taiga-api-login-failed
+                     (taiga-api--get-object #'taiga-error-from-alist)))
+            (429
+             (signal 'taiga-api-throttled
+                     (taiga-api--get-object #'taiga-error-from-alist)))))))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

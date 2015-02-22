@@ -119,5 +119,33 @@
     (should (taiga-user-p
              (taiga-api-github-login "foo" "token")))))
 
+(ert-deftest taiga-api-throttled-normal-login ()
+  "Check that a throttled login signals the proper error."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (&rest args)
+               (ignore args)
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (erase-buffer)
+                 (insert "HTTP/1.1 429 TOO MANY REQUESTS\n"
+                         "\n"
+                         "{\"_error_type\": \"foo\", \"_error_message\": \"bar\"}")
+                 (current-buffer)))))
+    (should-error (taiga-api-normal-login "foo" "bar")
+                  :type 'taiga-api-throttled)))
+
+(ert-deftest taiga-api-throttled-github-login ()
+  "Check that a throttled github login signals the proper error."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (&rest args)
+               (ignore args)
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (erase-buffer)
+                 (insert "HTTP/1.1 429 TOO MANY REQUESTS\n"
+                         "\n"
+                         "{\"_error_type\": \"foo\", \"_error_message\": \"bar\"}")
+                 (current-buffer)))))
+    (should-error (taiga-api-github-login "foo" "token")
+                  :type 'taiga-api-throttled)))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
