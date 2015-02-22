@@ -41,6 +41,9 @@
   (define-error 'taiga-api-login-failed
     "Could not login to your Taiga instance")
 
+  (define-error 'taiga-api-registration-failed
+    "Could not register at your selected Taiga instance")
+
   (define-error 'taiga-api-throttled
     "Your API connection has been throttled"))
 
@@ -140,6 +143,34 @@ TOKEN can be used to accept an invitation to a project."
                 (200 (taiga-api--get-object #'taiga-user-from-alist))
                 (400
                  (signal 'taiga-api-login-failed
+                         (taiga-api--get-object #'taiga-error-from-alist)))
+                (429
+                 (signal 'taiga-api-throttled
+                         (taiga-api--get-object #'taiga-error-from-alist)))))
+          (kill-buffer))))))
+
+(defun taiga-api-register-public (username password email full-name)
+  "Register a user without invitation on Taiga.
+
+USERNAME is the username with which you would like to log in.
+PASSWORD is the password you would like to use.  EMAIL is your
+email address.  FULL-NAME is your full name."
+  (let ((params `(("type" . "public")
+                  ("username" . ,username)
+                  ("password" . ,password)
+                  ("email" . ,email)
+                  ("full_name" . ,full-name))))
+    (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
+          (url-request-method "POST")
+          (url-request-data (json-encode params)))
+      (with-current-buffer
+          (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth/register"))
+        (unwind-protect
+            (let ((status (taiga-api--get-status-code)))
+              (cl-ecase status
+                (201 (taiga-api--get-object #'taiga-user-from-alist))
+                (400
+                 (signal 'taiga-api-registration-failed
                          (taiga-api--get-object #'taiga-error-from-alist)))
                 (429
                  (signal 'taiga-api-throttled

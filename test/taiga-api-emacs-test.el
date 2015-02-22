@@ -110,5 +110,32 @@
                   :type 'taiga-api-throttled)
     (should-not (buffer-live-p taiga-api-test-buffer))))
 
+(ert-deftest taiga-api-successful-public-registration ()
+  "Check that a successful public registration returns a user object."
+  (with-taiga-api-synchronous-response
+      201 nil (json-encode '(("username" . "foo")))
+    (should (taiga-user-p
+             (taiga-api-register-public
+              "foo" "bar" "foo@example.com" "Foo Frobnicate")))
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
+(ert-deftest taiga-api-unsuccessful-public-registration ()
+  "Check that a successful public registration signals an error."
+  (with-taiga-api-synchronous-response
+      400 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-register-public
+                   "foo" "bar" "foo@example.com" "Foo Frobnicate")
+                  :type 'taiga-api-registration-failed)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
+(ert-deftest taiga-api-throttled-public-registration ()
+  "Check that a successful public registration signals an error."
+  (with-taiga-api-synchronous-response
+      429 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-register-public
+                   "foo" "bar" "foo@example.com" "Foo Frobnicate")
+                  :type 'taiga-api-throttled)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
