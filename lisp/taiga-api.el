@@ -89,6 +89,38 @@ remove the entry if the new value is `eql' to DEFAULT."
    :username (alist-get 'username alist)
    :big-photo (alist-get 'big_photo alist)))
 
+(defmacro with-taiga-api-request (method endpoint params &rest responses)
+  "Prepare a request to Taiga using HTTP method METHOD to ENDPOINT.
+
+PARAMS is a list of parameter specifications.  They can either be
+a symbol, in which case the parameter name will be derived from
+that symbol, or a pair `(parameter-name . value)'.  RESPONSES is
+a list of `(code action)' pairs which dictate how to respond to
+specific HTTP status codes."
+  (declare (indent 3))
+  (let ((pvar (cl-gensym))
+        (svar (cl-gensym)))
+   `(let (,pvar)
+      ,@(mapcar (lambda (param)
+                 (if (symbolp param)
+                     `(when ,param
+                        (setq ,pvar (cons (cons ,(replace-regexp-in-string "-" "_" (symbol-name param)) ,param) ,pvar)))
+                   `(setq ,pvar (cons ',param ,pvar))))
+               params)
+      (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
+            (url-request-method ,method)
+            (url-request-data (json-encode ,pvar)))
+        (with-current-buffer
+            (url-retrieve-synchronously (concat taiga-api-url "api/v1/" ,endpoint))
+          (unwind-protect
+              (let ((,svar (taiga-api--get-status-code)))
+                (cl-ecase ,svar
+                  ,@responses
+                  (429
+                   (signal 'taiga-api-throttled
+                           (taiga-api--get-object #'taiga-error-from-alist)))))
+            (kill-buffer)))))))
+
 (defun taiga-api--get-object (constructor)
   "Use CONSTRUCTOR to build an object in the current buffer."
   (save-excursion
@@ -105,49 +137,21 @@ remove the entry if the new value is `eql' to DEFAULT."
 
 (defun taiga-api-normal-login (username password)
   "Login a user USERNAME using PASSWORD."
-  (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
-        (url-request-method "POST")
-        (url-request-data (json-encode `(("type" . "normal")
-                                         ("username" . ,username)
-                                         ("password" . ,password)))))
-    (with-current-buffer
-        (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
-      (let ((status (taiga-api--get-status-code)))
-        (unwind-protect
-            (cl-case status
-              (200
-               (taiga-api--get-object #'taiga-user-from-alist))
-              (400
-               (signal 'taiga-api-login-failed
-                       (taiga-api--get-object #'taiga-error-from-alist)))
-              (429
-               (signal 'taiga-api-throttled
-                       (taiga-api--get-object #'taiga-error-from-alist))))
-          (kill-buffer))))))
+  (with-taiga-api-request
+      "POST" "auth" (("type" . "normal") username password)
+    (200 (taiga-api--get-object#'taiga-user-from-alist))
+    (400 (signal 'taiga-api-login-failed
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
 
 (defun taiga-api-github-login (code &optional token)
   "Login a user through github using CODE.
 
 TOKEN can be used to accept an invitation to a project."
-  (let ((params `(("type" . "github")
-                  ("code" . ,code))))
-    (when token (setq params (cons `("token" . ,token) params)))
-    (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
-          (url-request-method "POST")
-          (url-request-data (json-encode params)))
-      (with-current-buffer
-          (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
-        (unwind-protect
-            (let ((status (taiga-api--get-status-code)))
-              (cl-ecase status
-                (200 (taiga-api--get-object #'taiga-user-from-alist))
-                (400
-                 (signal 'taiga-api-login-failed
-                         (taiga-api--get-object #'taiga-error-from-alist)))
-                (429
-                 (signal 'taiga-api-throttled
-                         (taiga-api--get-object #'taiga-error-from-alist)))))
-          (kill-buffer))))))
+  (with-taiga-api-request
+      "POST" "auth" (("type" . "github") code token)
+    (200 (taiga-api--get-object #'taiga-user-from-alist))
+    (400 (signal 'taiga-api-login-failed
+                 (taiga-api--get-object #'taiga-user-from-alist)))))
 
 (defun taiga-api-register-public (username password email full-name)
   "Register a user without invitation on Taiga.
@@ -155,27 +159,12 @@ TOKEN can be used to accept an invitation to a project."
 USERNAME is the username with which you would like to log in.
 PASSWORD is the password you would like to use.  EMAIL is your
 email address.  FULL-NAME is your full name."
-  (let ((params `(("type" . "public")
-                  ("username" . ,username)
-                  ("password" . ,password)
-                  ("email" . ,email)
-                  ("full_name" . ,full-name))))
-    (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
-          (url-request-method "POST")
-          (url-request-data (json-encode params)))
-      (with-current-buffer
-          (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth/register"))
-        (unwind-protect
-            (let ((status (taiga-api--get-status-code)))
-              (cl-ecase status
-                (201 (taiga-api--get-object #'taiga-user-from-alist))
-                (400
-                 (signal 'taiga-api-registration-failed
-                         (taiga-api--get-object #'taiga-error-from-alist)))
-                (429
-                 (signal 'taiga-api-throttled
-                         (taiga-api--get-object #'taiga-error-from-alist)))))
-          (kill-buffer))))))
+  (with-taiga-api-request
+      "POST" "auth/register"
+      (("type" . "public") username password email full-name)
+    (201 (taiga-api--get-object #'taiga-user-from-alist))
+    (400 (signal 'taiga-api-registration-failed
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
