@@ -65,99 +65,50 @@
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
   "Check that an unsuccessful login signals an error."
-  (let ((buffer (generate-new-buffer "taiga-api-http-test")))
-    (cl-letf (((symbol-function 'url-retrieve-synchronously)
-               (lambda (&rest args)
-                 (ignore args)
-                 (with-current-buffer buffer
-                   (erase-buffer)
-                   (insert "HTTP/1.1 400 BAD REQUEST\n"
-                           "\n"
-                           "{\"_error_type\": \"taiga.base.exceptions.WrongArguments\", \"_error_message\": \"Username or password does not matches user.\"}")
-                   (current-buffer)))))
-      (should-error (taiga-api-normal-login "foo" "bar")
-                    :type 'taiga-api-login-failed)
-      (should-not (buffer-live-p buffer)))))
+  (with-taiga-api-synchronous-response
+      400 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-normal-login "foo" "bar")
+                  :type 'taiga-api-login-failed)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (ert-deftest taiga-api-successful-normal-login ()
   "Check that a successful login returns a user object."
-  (let ((buffer (generate-new-buffer "taiga-api-http-test")))
-    (cl-letf (((symbol-function 'url-retrieve-synchronously)
-               (lambda (&rest args)
-                 (ignore args)
-                 (with-current-buffer buffer
-                   (erase-buffer)
-                   (insert "HTTP/1.1 200 OK\n"
-                           "\n"
-                           "{\"username\": \"foobar\"}")
-                   (current-buffer)))))
-      (should (taiga-user-p
-               (taiga-api-normal-login "foo" "bar")))
-      (should-not (buffer-live-p buffer)))))
+  (with-taiga-api-synchronous-response
+      200 nil (json-encode '(("username" . "foobar")))
+    (should (taiga-user-p (taiga-api-normal-login "foo" "bar")))
+    (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (ert-deftest taiga-api-unsuccessful-github-login ()
   "Check that an unsuccessful github login signals an error."
-  (let ((buffer (generate-new-buffer "taiga-api-http-test")))
-    (cl-letf (((symbol-function 'url-retrieve-synchronously)
-               (lambda (&rest args)
-                 (ignore args)
-                 (with-current-buffer buffer
-                   (erase-buffer)
-                   (insert "HTTP/1.1 400 BAD REQUEST\n"
-                           "\n"
-                           "{\"_error_type\": \"taiga.base.exceptions.WrongArguments\", \"_error_message\": \"Username or password does not matches user.\"}")
-                   (current-buffer)))))
-      (should-error (taiga-api-github-login "foo")
-                    :type 'taiga-api-login-failed)
-      (should-not (buffer-live-p buffer)))))
+  (with-taiga-api-synchronous-response
+      400 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-github-login "foo")
+                  :type 'taiga-api-login-failed)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (ert-deftest taiga-api-successful-github-login ()
   "Check that a successful github login returns a user object."
-  (let ((buffer (generate-new-buffer "taiga-api-http-test")))
-    (cl-letf (((symbol-function 'url-retrieve-synchronously)
-               (lambda (&rest args)
-                 (ignore args)
-                 (with-current-buffer buffer
-                   (erase-buffer)
-                   (insert "HTTP/1.1 200 OK\n"
-                           "\n"
-                           "{\"username\": \"foobar\"}")
-                   (current-buffer)))))
-      (should (taiga-user-p
-               (taiga-api-github-login "foo" "token")))
-      (should-not (buffer-live-p buffer)))))
+  (with-taiga-api-synchronous-response
+      200 nil (json-encode '(("username" . "foobar")))
+    (should (taiga-user-p
+             (taiga-api-github-login "foo" "token")))
+    (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (ert-deftest taiga-api-throttled-normal-login ()
   "Check that a throttled login signals the proper error."
-  (let ((buffer (generate-new-buffer "taiga-api-http-test")))
-    (cl-letf (((symbol-function 'url-retrieve-synchronously)
-               (lambda (&rest args)
-                 (ignore args)
-                 (with-current-buffer buffer
-                   (erase-buffer)
-                   (insert "HTTP/1.1 429 TOO MANY REQUESTS\n"
-                           "\n"
-                           "{\"_error_type\": \"foo\", \"_error_message\": \"bar\"}")
-                   (current-buffer)))))
-      (should-error (taiga-api-normal-login "foo" "bar")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p buffer)))))
+  (with-taiga-api-synchronous-response
+      429 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-normal-login "foo" "bar")
+                  :type 'taiga-api-throttled)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (ert-deftest taiga-api-throttled-github-login ()
   "Check that a throttled github login signals the proper error."
-  (let ((buffer (generate-new-buffer "taiga-api-http-test")))
-    (cl-letf (((symbol-function 'url-retrieve-synchronously)
-               (lambda (&rest args)
-                 (ignore args)
-                 (with-current-buffer buffer
-                   (erase-buffer)
-                   (insert "HTTP/1.1 429 TOO MANY REQUESTS\n"
-                           "\n"
-                           "{\"_error_type\": \"foo\", \"_error_message\": \"bar\"}")
-                   (current-buffer)))))
-      (should-error (taiga-api-github-login "foo" "token")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p buffer)))))
+  (with-taiga-api-synchronous-response
+      429 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-github-login "foo" "token")
+                  :type 'taiga-api-throttled)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
