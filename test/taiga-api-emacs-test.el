@@ -63,8 +63,8 @@
     (should (string= (taiga-user-username detail) "foobar"))
     (should (string= (taiga-user-big-photo detail) "//www.gravatar.com/avatar/12346"))))
 
-(ert-deftest taiga-api-unsuccesful-login ()
-  "Check that an unsuccesful login signals an error."
+(ert-deftest taiga-api-unsuccessful-normal-login ()
+  "Check that an unsuccessful login signals an error."
   (cl-letf (((symbol-function 'url-retrieve-synchronously)
              (lambda (&rest args)
                (ignore args)
@@ -77,8 +77,8 @@
     (should-error (taiga-api-normal-login "foo" "bar")
                   :type 'taiga-api-login-failed)))
 
-(ert-deftest taiga-api-successful-login ()
-  "Check that a successful login returns a list."
+(ert-deftest taiga-api-successful-normal-login ()
+  "Check that a successful login returns a user object."
   (cl-letf (((symbol-function 'url-retrieve-synchronously)
              (lambda (&rest args)
                (ignore args)
@@ -86,10 +86,38 @@
                  (erase-buffer)
                  (insert "HTTP/1.1 200 OK\n"
                          "\n"
-                         "{\"username\": \"ryuslash\"}")
+                         "{\"username\": \"foobar\"}")
                  (current-buffer)))))
     (should (taiga-user-p
              (taiga-api-normal-login "foo" "bar")))))
+
+(ert-deftest taiga-api-unsuccessful-github-login ()
+  "Check that an unsuccessful github login signals an error."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (&rest args)
+               (ignore args)
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (erase-buffer)
+                 (insert "HTTP/1.1 400 BAD REQUEST\n"
+                         "\n"
+                         "{\"_error_type\": \"taiga.base.exceptions.WrongArguments\", \"_error_message\": \"Username or password does not matches user.\"}")
+                 (current-buffer)))))
+    (should-error (taiga-api-github-login "foo")
+                  :type 'taiga-api-login-failed)))
+
+(ert-deftest taiga-api-successful-github-login ()
+  "Check that a successful github login returns a user object."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (&rest args)
+               (ignore args)
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (erase-buffer)
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"username\": \"foobar\"}")
+                 (current-buffer)))))
+    (should (taiga-user-p
+             (taiga-api-github-login "foo" "token")))))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

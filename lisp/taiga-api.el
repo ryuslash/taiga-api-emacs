@@ -106,5 +106,24 @@ remove the entry if the new value is `eql' to DEFAULT."
         (signal 'taiga-api-login-failed
                 (taiga-api--get-object #'taiga-error-from-alist))))))
 
+(defun taiga-api-github-login (code &optional token)
+  "Login a user through github using CODE.
+
+TOKEN can be used to accept an invitation to a project."
+  (let ((params `(("type" . "github")
+                  ("code" . ,code))))
+    (when token (setq params (cons `("token" . ,token) params)))
+    (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
+          (url-request-method "POST")
+          (url-request-data (json-encode params)))
+      (with-current-buffer
+          (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
+        (goto-char (point-min))
+        (re-search-forward "^HTTP/.+ \\([0-9]+\\)")
+        (if (string= (match-string 1) "200")
+            (taiga-api--get-object #'taiga-user-from-alist)
+          (signal 'taiga-api-login-failed
+                  (taiga-api--get-object #'taiga-error-from-alist)))))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
