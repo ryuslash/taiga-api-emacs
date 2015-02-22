@@ -110,15 +110,17 @@ remove the entry if the new value is `eql' to DEFAULT."
     (with-current-buffer
         (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
       (let ((status (taiga-api--get-status-code)))
-        (cl-case status
-          (200
-           (taiga-api--get-object #'taiga-user-from-alist))
-          (400
-           (signal 'taiga-api-login-failed
-                   (taiga-api--get-object #'taiga-error-from-alist)))
-          (429
-           (signal 'taiga-api-throttled
-                   (taiga-api--get-object #'taiga-error-from-alist))))))))
+        (unwind-protect
+            (cl-case status
+              (200
+               (taiga-api--get-object #'taiga-user-from-alist))
+              (400
+               (signal 'taiga-api-login-failed
+                       (taiga-api--get-object #'taiga-error-from-alist)))
+              (429
+               (signal 'taiga-api-throttled
+                       (taiga-api--get-object #'taiga-error-from-alist))))
+          (kill-buffer))))))
 
 (defun taiga-api-github-login (code &optional token)
   "Login a user through github using CODE.
@@ -132,15 +134,17 @@ TOKEN can be used to accept an invitation to a project."
           (url-request-data (json-encode params)))
       (with-current-buffer
           (url-retrieve-synchronously (concat taiga-api-url "api/v1/auth"))
-        (let ((status (taiga-api--get-status-code)))
-          (cl-ecase status
-            (200 (taiga-api--get-object #'taiga-user-from-alist))
-            (400
-             (signal 'taiga-api-login-failed
-                     (taiga-api--get-object #'taiga-error-from-alist)))
-            (429
-             (signal 'taiga-api-throttled
-                     (taiga-api--get-object #'taiga-error-from-alist)))))))))
+        (unwind-protect
+            (let ((status (taiga-api--get-status-code)))
+              (cl-ecase status
+                (200 (taiga-api--get-object #'taiga-user-from-alist))
+                (400
+                 (signal 'taiga-api-login-failed
+                         (taiga-api--get-object #'taiga-error-from-alist)))
+                (429
+                 (signal 'taiga-api-throttled
+                         (taiga-api--get-object #'taiga-error-from-alist)))))
+          (kill-buffer))))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
