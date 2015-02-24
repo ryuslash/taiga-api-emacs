@@ -129,11 +129,38 @@
     (should-not (buffer-live-p taiga-api-test-buffer))))
 
 (ert-deftest taiga-api-throttled-public-registration ()
-  "Check that a successful public registration signals an error."
+  "Check that a throttled public registration signals an error."
   (with-taiga-api-synchronous-response
       429 nil (taiga-api--json-encoded-error)
     (should-error (taiga-api-register-public
                    "foo" "bar" "foo@example.com" "Foo Frobnicate")
+                  :type 'taiga-api-throttled)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
+(ert-deftest taiga-api-successful-private-registration ()
+  "Check that a successful private registration returns a user object."
+  (with-taiga-api-synchronous-response
+      201 nil (json-encode '(("username" . "foo")))
+    (should (taiga-user-p
+             (taiga-api-register-private
+              t "token" "username" "password")))
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
+(ert-deftest taiga-api-unsuccessful-private-registration ()
+  "Check that an unsuccessful private registration signals an error."
+  (with-taiga-api-synchronous-response
+      400 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-register-private
+                   nil "token" "username" "password" "email" "full-name")
+                  :type 'taiga-api-registration-failed)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
+(ert-deftest taiga-api-throttled-private-registration ()
+  "Check that a throttled private registration signals an error."
+  (with-taiga-api-synchronous-response
+      429 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-register-private
+                   t "token" "username" "password")
                   :type 'taiga-api-throttled)
     (should-not (buffer-live-p taiga-api-test-buffer))))
 

@@ -166,5 +166,23 @@ email address.  FULL-NAME is your full name."
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
+(defun taiga-api-register-private
+    (existing token username password &optional email full-name)
+  "Add a user to a project through an invitation.
+
+EXISTING indicates whether or not the user is already a member on
+the Taiga instance.  TOKEN is the token generated through the
+invitation.  USERNAME is the user's username.  PASSWORD is the
+user's password.  EMAIL is the user's email address, this is only
+required if EXISTING is nil.  FULL-NAME is the user's full name
+and also only required if EXISTING is nil."
+  (with-taiga-api-request
+      "POST" "auth/register"
+      (("type" . "public")
+       existing token username password email full-name)
+    (201 (taiga-api--get-object #'taiga-user-from-alist))
+    (400 (signal 'taiga-api-registration-failed
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
