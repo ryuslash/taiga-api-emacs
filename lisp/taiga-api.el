@@ -89,6 +89,16 @@ remove the entry if the new value is `eql' to DEFAULT."
    :username (alist-get 'username alist)
    :big-photo (alist-get 'big_photo alist)))
 
+(eval-when-compile
+  (defun taiga-api--make-parameter-cons (param pvar)
+    "Turn PARAM into a cons and join it to PVAR."
+    (if (symbolp param)
+        (let ((paramname
+               (replace-regexp-in-string "-" "_" (symbol-name param))))
+         `(when ,param
+            (setq ,pvar (cons (cons ,paramname ,param) ,pvar))))
+      `(setq ,pvar (cons ',param ,pvar)))))
+
 (defmacro with-taiga-api-request (method endpoint params &rest responses)
   "Prepare a request to Taiga using HTTP method METHOD to ENDPOINT.
 
@@ -100,26 +110,22 @@ specific HTTP status codes."
   (declare (indent 3))
   (let ((pvar (cl-gensym))
         (svar (cl-gensym)))
-   `(let (,pvar)
-      ,@(mapcar (lambda (param)
-                 (if (symbolp param)
-                     `(when ,param
-                        (setq ,pvar (cons (cons ,(replace-regexp-in-string "-" "_" (symbol-name param)) ,param) ,pvar)))
-                   `(setq ,pvar (cons ',param ,pvar))))
-               params)
-      (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
-            (url-request-method ,method)
-            (url-request-data (json-encode ,pvar)))
-        (with-current-buffer
-            (url-retrieve-synchronously (concat taiga-api-url "api/v1/" ,endpoint))
-          (unwind-protect
-              (let ((,svar (taiga-api--get-status-code)))
-                (cl-ecase ,svar
-                  ,@responses
-                  (429
-                   (signal 'taiga-api-throttled
-                           (taiga-api--get-object #'taiga-error-from-alist)))))
-            (kill-buffer)))))))
+    `(let (,pvar)
+       ,@(mapcar (lambda (param) (taiga-api--make-parameter-cons param pvar))
+                 params)
+       (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
+             (url-request-method ,method)
+             (url-request-data (json-encode ,pvar)))
+         (with-current-buffer
+             (url-retrieve-synchronously (concat taiga-api-url "api/v1/" ,endpoint))
+           (unwind-protect
+               (let ((,svar (taiga-api--get-status-code)))
+                 (cl-ecase ,svar
+                   ,@responses
+                   (429
+                    (signal 'taiga-api-throttled
+                            (taiga-api--get-object #'taiga-error-from-alist)))))
+             (kill-buffer)))))))
 
 (defun taiga-api--get-object (constructor)
   "Use CONSTRUCTOR to build an object in the current buffer."
