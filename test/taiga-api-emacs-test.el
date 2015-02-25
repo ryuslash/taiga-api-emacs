@@ -186,5 +186,31 @@
     (should-not (buffer-live-p taiga-api-test-buffer))
     (should-not *taiga-api--auth-token*)))
 
+;;; Resolver
+
+(ert-deftest taiga-api-successful-project-resolution ()
+  "Check that a successful project resolution returns an alist."
+  (with-taiga-api-synchronous-response
+      200 nil (json-encode '((project . 1)))
+    (let ((result (taiga-api-resolve-project "project")))
+      (should (= 1 (cdr (assq 'project result))))
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-unsuccessful-project-resolution ()
+  "Check that an unsuccessful project resolution signals an error."
+  (with-taiga-api-synchronous-response
+      404 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-resolve-project "project")
+                 :type 'taiga-api-unresolved)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
+(ert-deftest taiga-api-throttled-project-resolution ()
+  "Check that a throttled project resolution signals an error."
+  (with-taiga-api-synchronous-response
+      429 nil (taiga-api--json-encoded-error)
+    (should-error (taiga-api-resolve-project "project")
+                  :type 'taiga-api-throttled)
+    (should-not (buffer-live-p taiga-api-test-buffer))))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

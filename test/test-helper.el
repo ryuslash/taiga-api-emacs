@@ -10,6 +10,7 @@
     (let ((status (assoc code '((200 . "OK")
                                 (201 . "CREATED")
                                 (400 . "BAD REQUEST")
+                                (404 . "NOT FOUND")
                                 (429 . "TOO MANY REQUESTS")))))
       (if status (cdr status))))
 
