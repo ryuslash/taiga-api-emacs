@@ -37,6 +37,9 @@
   :group 'taiga-api
   :type 'string)
 
+(defvar *taiga-api--auth-token* nil
+  "The auth token returned from Taiga.")
+
 (when (fboundp 'define-error)
   (define-error 'taiga-api-login-failed
     "Could not login to your Taiga instance")
@@ -141,11 +144,16 @@ specific HTTP status codes."
     (if (re-search-forward "^HTTP/.+ \\([0-9]+\\)" nil :noerror)
         (string-to-number (match-string 1)))))
 
+;;; Auth
+
 (defun taiga-api-normal-login (username password)
   "Login a user USERNAME using PASSWORD."
   (with-taiga-api-request
       "POST" "auth" (("type" . "normal") username password)
-    (200 (taiga-api--get-object#'taiga-user-from-alist))
+    (200
+     (let ((user (taiga-api--get-object#'taiga-user-from-alist)))
+       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
@@ -155,7 +163,10 @@ specific HTTP status codes."
 TOKEN can be used to accept an invitation to a project."
   (with-taiga-api-request
       "POST" "auth" (("type" . "github") code token)
-    (200 (taiga-api--get-object #'taiga-user-from-alist))
+    (200
+     (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
+       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-user-from-alist)))))
 
@@ -168,7 +179,10 @@ email address.  FULL-NAME is your full name."
   (with-taiga-api-request
       "POST" "auth/register"
       (("type" . "public") username password email full-name)
-    (201 (taiga-api--get-object #'taiga-user-from-alist))
+    (201
+     (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
+       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
@@ -186,7 +200,10 @@ and also only required if EXISTING is nil."
       "POST" "auth/register"
       (("type" . "public")
        existing token username password email full-name)
-    (201 (taiga-api--get-object #'taiga-user-from-alist))
+    (201
+     (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
+       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
