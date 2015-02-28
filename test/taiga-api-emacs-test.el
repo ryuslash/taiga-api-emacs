@@ -220,7 +220,7 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-unauthenticated-user-story-resolution ()
-  "Check that an unauthenticated user story resolution singals an error."
+  "Check that an unauthenticated user story resolution signals an error."
   (taiga-api-test--ensure-token ""
     (should-error (taiga-api-resolve-user-story "project" "us")
                   :type 'taiga-api-unauthenticated)))
@@ -250,6 +250,40 @@
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-user-story "project" "us")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-unauthenticated-issue-resolution ()
+  "Check that an unauthenticated issue resolution signals an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-resolve-issue "project" "issue")
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-issue-resolution ()
+  "Check that a successful issue resolution returns an alist."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (json-encode '((issue . 5209) (project . 1)))
+      (let ((result (taiga-api-resolve-issue "project" "issue")))
+        (should (= 1 (cdr (assq 'project result))))
+        (should (= 5209 (cdr (assq 'issue result))))
+        (should-not (buffer-live-p taiga-api-test-buffer))))))
+
+(ert-deftest taiga-api-unsuccessful-issue-resolution ()
+  "Check that an unsuccessful issue resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-issue "project" "issue")
+                    :type 'taiga-api-unresolved)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-throttled-issue-resolution ()
+  "Check that a throttled issue resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-issue "project" "issue")
                     :type 'taiga-api-throttled)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
