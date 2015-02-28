@@ -72,7 +72,7 @@
     (should-error (taiga-api-normal-login "foo" "bar")
                   :type 'taiga-api-login-failed)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-successful-normal-login ()
   "Check that a successful login returns a user object."
@@ -91,7 +91,7 @@
     (should-error (taiga-api-github-login "foo")
                   :type 'taiga-api-login-failed)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-successful-github-login ()
   "Check that a successful github login returns a user object."
@@ -111,7 +111,7 @@
     (should-error (taiga-api-normal-login "foo" "bar")
                   :type 'taiga-api-throttled)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-throttled-github-login ()
   "Check that a throttled github login signals the proper error."
@@ -120,7 +120,7 @@
     (should-error (taiga-api-github-login "foo" "token")
                   :type 'taiga-api-throttled)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-successful-public-registration ()
   "Check that a successful public registration returns a user object."
@@ -142,7 +142,7 @@
                    "foo" "bar" "foo@example.com" "Foo Frobnicate")
                   :type 'taiga-api-registration-failed)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-throttled-public-registration ()
   "Check that a throttled public registration signals an error."
@@ -152,7 +152,7 @@
                    "foo" "bar" "foo@example.com" "Foo Frobnicate")
                   :type 'taiga-api-throttled)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-successful-private-registration ()
   "Check that a successful private registration returns a user object."
@@ -174,7 +174,7 @@
                    nil "token" "username" "password" "email" "full-name")
                   :type 'taiga-api-registration-failed)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 (ert-deftest taiga-api-throttled-private-registration ()
   "Check that a throttled private registration signals an error."
@@ -184,7 +184,7 @@
                    t "token" "username" "password")
                   :type 'taiga-api-throttled)
     (should-not (buffer-live-p taiga-api-test-buffer))
-    (should-not *taiga-api--auth-token*)))
+    (should (string-empty-p *taiga-api--auth-token*))))
 
 ;;; Resolver
 

@@ -38,7 +38,7 @@
   :group 'taiga-api
   :type 'string)
 
-(defvar *taiga-api--auth-token* nil
+(defvar *taiga-api--auth-token* ""
   "The auth token returned from Taiga.")
 
 (when (fboundp 'define-error)
