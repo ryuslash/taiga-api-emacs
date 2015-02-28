@@ -52,7 +52,10 @@
     "Your API connection has been throttled")
 
   (define-error 'taiga-api-unresolved
-    "Could not resolve the object"))
+    "Could not resolve the object")
+
+  (define-error 'taiga-api-unauthenticated
+    "You forgot to login"))
 
 (unless (fboundp 'alist-get)
   ;; Copied from subr.el in Emacs 25.0.50.1 (from 2015-02-15)
@@ -215,6 +218,9 @@ and also only required if EXISTING is nil."
 
 (defun taiga-api-resolve-project (project)
   "Get the ID of a project identified by the slug PROJECT."
+  (unless (not (string= *taiga-api--auth-token* ""))
+    (signal 'taiga-api-unauthenticated nil))
+
   (let ((url-request-extra-headers
          `(("Content-Type" . "application/json")
            ("Authorization" . ,(concat "Bearer " *taiga-api--auth-token*))))
