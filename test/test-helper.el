@@ -47,3 +47,10 @@ this to inspect the contents of the buffer."
   "A json-encoded error to test with."
   (json-encode '(("_error_type" . "taiga.base.exceptions.WrongArguments")
                  ("_error_message" . "Username or password does not matches user."))))
+
+(defmacro taiga-api-test--ensure-token (token &rest body)
+  "Test that the `*taiga-api--auth-token*' equals TOKEN after running BODY."
+  (declare (indent 1))
+  `(let ((*taiga-api--auth-token* ""))
+     ,@body
+     (should (string= *taiga-api--auth-token* ,token))))
