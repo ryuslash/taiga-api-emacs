@@ -261,10 +261,7 @@ and also only required if EXISTING is nil."
     (signal 'taiga-api-unauthenticated nil))
 
   (with-taiga-api-get-request "resolver" (project)
-    (200
-     (goto-char (point-min))
-     (search-forward "\n\n")
-     (json-read))
+    (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
@@ -277,10 +274,7 @@ story within the project."
     (signal 'taiga-api-unauthenticated nil))
 
   (with-taiga-api-get-request "resolver" (project us)
-    (200
-     (goto-char (point-min))
-     (search-forward "\n\n")
-     (json-read))
+    (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
@@ -293,10 +287,7 @@ the issue within the project."
     (signal 'taiga-api-unauthenticated nil))
 
   (with-taiga-api-get-request "resolver" (project issue)
-    (200
-     (goto-char (point-min))
-     (search-forward "\n\n")
-     (json-read))
+    (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
@@ -309,10 +300,7 @@ task within the project."
     (signal 'taiga-api-unauthenticated nil))
 
   (with-taiga-api-get-request "resolver" (project task)
-    (200
-     (goto-char (point-min))
-     (search-forward "\n\n")
-     (json-read))
+    (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
