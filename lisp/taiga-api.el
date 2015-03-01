@@ -300,5 +300,21 @@ the issue within the project."
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
+(defun taiga-api-resolve-task (project task)
+  "Search PROJECT for the id of a task with number TASK.
+
+PROJECT should be the slug of a project, TASK is the number of a
+task within the project."
+  (unless (not (string= *taiga-api--auth-token* ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (with-taiga-api-get-request "resolver" (project task)
+    (200
+     (goto-char (point-min))
+     (search-forward "\n\n")
+     (json-read))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

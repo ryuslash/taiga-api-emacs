@@ -384,12 +384,58 @@
   (cl-letf (((symbol-function 'url-retrieve-synchronously)
              (lambda (url &rest args)
                (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&issue=5" url))
-               (with-current-buffer (generate-new-buffer "taiga-api-http_test")
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                  (insert "HTTP/1.1 200 OK\n"
                          "\n"
                          "{\"foo\": \"bar\"}")
                  (current-buffer)))))
     (taiga-api-resolve-issue "some-project" 5)))
+
+(ert-deftest taiga-api-unauthenticated-task-resolution ()
+  "Check that an unauthenticated task resolution signals an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-resolve-task "project" "task")
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-task-resolution ()
+  "Check that a successful task resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (json-encode '((task . 1336) (project . 1)))
+      (let ((result (taiga-api-resolve-task "project" "task")))
+        (should (= 1 (cdr (assq 'project result))))
+        (should (= 1336 (cdr (assq 'task result))))
+        (should-not (buffer-live-p taiga-api-test-buffer))))))
+
+(ert-deftest taiga-api-unsuccessful-task-resolution ()
+  "Check that an unsuccessful task resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-task "project" "task")
+                    :type 'taiga-api-unresolved)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-throttled-task-resolution ()
+  "Check that a throttled task resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-task "project" "task")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-task-resolution-request ()
+  "Check that request parameters for task resolution are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&task=5" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-resolve-task "some-project" 5)))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
