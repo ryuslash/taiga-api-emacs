@@ -369,11 +369,13 @@
 
 (ert-deftest taiga-api-project-resolution-request ()
   "Check that request parameters for project resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -384,11 +386,13 @@
 
 (ert-deftest taiga-api-user-story-resolution-request ()
   "Check that request parameters for user story resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&us=5" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -399,11 +403,13 @@
 
 (ert-deftest taiga-api-issue-resolution-request ()
   "Check that request paramaters for issue resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&issue=5" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -448,11 +454,13 @@
 
 (ert-deftest taiga-api-task-resolution-request ()
   "Check that request parameters for task resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&task=5" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -497,11 +505,13 @@
 
 (ert-deftest taiga-api-milestone-resolution-request ()
   "Check that request parameters for milestone resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&milestone=some-milestone" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -546,11 +556,13 @@
 
 (ert-deftest taiga-api-wiki-resolution-request ()
   "Check that request parameters for wiki page resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&wikipage=home" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -600,11 +612,13 @@
 
 (ert-deftest taiga-api-resolution-request ()
   "Check that request parameters for resolution are setup correctly."
-  (let ((func-used 0))
+  (let ((func-used 0)
+        (*taiga-api--auth-token* "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&us=5&milestone=some-milestone" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
