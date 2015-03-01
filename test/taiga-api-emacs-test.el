@@ -510,5 +510,54 @@
       (taiga-api-resolve-milestone "some-project" "some-milestone"))
     (should (= 1 func-used))))
 
+(ert-deftest taiga-api-unauthenticated-wiki-resolution ()
+  "Check that an unauthenticated wiki resolution signals an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-resolve-wiki "project" "wikipage")
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-wiki-resolution ()
+  "Check that a successful milestone resolution returns an alist."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (json-encode '((wikipage . 2) (project . 1)))
+      (let ((result (taiga-api-resolve-wiki "project" "wikipage")))
+        (should (= 1 (cdr (assq 'project result))))
+        (should (= 2 (cdr (assq 'wikipage result))))
+        (should-not (buffer-live-p taiga-api-test-buffer))))))
+
+(ert-deftest taiga-api-unsuccessful-wiki-resolution ()
+  "Check that a successful wiki resolution returns an alist."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-wiki "project" "wikipage")
+                    :type 'taiga-api-unresolved)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-throttled-wiki-resolution ()
+  "Check that a throttled wiki resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-wiki "project" "wikipage")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-wiki-resolution-request ()
+  "Check that request parameters for wiki page resolution are setup correctly."
+  (let ((func-used 0))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&wikipage=home" url))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-resolve-wiki "some-project" "home"))
+    (should (= 1 func-used))))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

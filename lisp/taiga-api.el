@@ -317,5 +317,18 @@ milestone/sprint respectively."
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
+(defun taiga-api-resolve-wiki (project wikipage)
+  "Search PROJECT for the id of a milestone with slug WIKIPAGE.
+
+PROJECT and WIKIPAGE should be the slugs of a project and wiki
+page respectively."
+  (unless (not (string= *taiga-api--auth-token* ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (with-taiga-api-get-request "resolver" (project wikipage)
+    (200 (taiga-api--get-object #'identity))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
