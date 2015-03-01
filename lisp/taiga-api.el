@@ -257,78 +257,42 @@ and also only required if EXISTING is nil."
 
 (defun taiga-api-resolve-project (project)
   "Get the ID of a project identified by the slug PROJECT."
-  (unless (not (string= *taiga-api--auth-token* ""))
-    (signal 'taiga-api-unauthenticated nil))
-
-  (with-taiga-api-get-request "resolver" (project)
-    (200 (taiga-api--get-object #'identity))
-    (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+  (taiga-api-resolve project))
 
 (defun taiga-api-resolve-user-story (project us)
   "Search PROJECT for the id of a user story with number US.
 
 PROJECT should be the slug of a project, US is the number of the
 story within the project."
-  (unless (not (string= *taiga-api--auth-token* ""))
-    (signal 'taiga-api-unauthenticated nil))
-
-  (with-taiga-api-get-request "resolver" (project us)
-    (200 (taiga-api--get-object #'identity))
-    (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+  (taiga-api-resolve project :us us))
 
 (defun taiga-api-resolve-issue (project issue)
   "Search PROJECT for the id of an issue with number ISSUE.
 
 PROJECT should be the slug of a project, ISSUE is the number of
 the issue within the project."
-  (unless (not (string= *taiga-api--auth-token* ""))
-    (signal 'taiga-api-unauthenticated nil))
-
-  (with-taiga-api-get-request "resolver" (project issue)
-    (200 (taiga-api--get-object #'identity))
-    (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+  (taiga-api-resolve project :issue issue))
 
 (defun taiga-api-resolve-task (project task)
   "Search PROJECT for the id of a task with number TASK.
 
 PROJECT should be the slug of a project, TASK is the number of a
 task within the project."
-  (unless (not (string= *taiga-api--auth-token* ""))
-    (signal 'taiga-api-unauthenticated nil))
-
-  (with-taiga-api-get-request "resolver" (project task)
-    (200 (taiga-api--get-object #'identity))
-    (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+  (taiga-api-resolve project :task task))
 
 (defun taiga-api-resolve-milestone (project milestone)
   "Search PROJECT for the id of a milestone with slug MILESTONE.
 
 PROJECT and MILESTONE should be the slugs of a project and
 milestone/sprint respectively."
-  (unless (not (string= *taiga-api--auth-token* ""))
-    (signal 'taiga-api-unauthenticated nil))
-
-  (with-taiga-api-get-request "resolver" (project milestone)
-    (200 (taiga-api--get-object #'identity))
-    (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+  (taiga-api-resolve project :milestone milestone))
 
 (defun taiga-api-resolve-wiki (project wikipage)
   "Search PROJECT for the id of a milestone with slug WIKIPAGE.
 
 PROJECT and WIKIPAGE should be the slugs of a project and wiki
 page respectively."
-  (unless (not (string= *taiga-api--auth-token* ""))
-    (signal 'taiga-api-unauthenticated nil))
-
-  (with-taiga-api-get-request "resolver" (project wikipage)
-    (200 (taiga-api--get-object #'identity))
-    (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+  (taiga-api-resolve project :wikipage wikipage))
 
 (cl-defun taiga-api-resolve
     (project &key us issue task milestone wikipage)
