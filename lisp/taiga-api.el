@@ -244,7 +244,7 @@ required if EXISTING is nil.  FULL-NAME is the user's full name
 and also only required if EXISTING is nil."
   (with-taiga-api-post-request
       "auth/register"
-      (("type" . "public")
+      (("type" . "private")
        existing token username password email full-name)
     (201
      (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
