@@ -184,6 +184,22 @@
                     :type 'taiga-api-throttled)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(ert-deftest taiga-api-normal-login-request ()
+  "Check that request parameters for normal login are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= (json-encode '(("password" . "bar")
+                                               ("username" . "foo")
+                                               ("type" . "normal")))
+                                url-request-data))
+               (should (string= "https://api.taiga.io/api/v1/auth" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-normal-login "foo" "bar")))
+
 ;;; Resolver
 
 (ert-deftest taiga-api-unauthenticated-project-resolution ()
