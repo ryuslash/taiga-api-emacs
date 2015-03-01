@@ -559,5 +559,59 @@
       (taiga-api-resolve-wiki "some-project" "home"))
     (should (= 1 func-used))))
 
+(ert-deftest taiga-api-unauthenticated-resolution ()
+  "Check that an unauthenticated resolution signals an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-resolve "project" :us 1)
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-resolution ()
+  "Check that a successful resolution returns an alist."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (json-encode '((task . 1336)
+                               (us . 26)
+                               (wikipage . 2)
+                               (project . 1)))
+      (let ((result (taiga-api-resolve "project" :wikipage "home")))
+        (should (= 1 (cdr (assq 'project result))))
+        (should (= 1336 (cdr (assq 'task result))))
+        (should (= 26 (cdr (assq 'us result))))
+        (should (= 2 (cdr (assq 'wikipage result))))
+        (should-not (buffer-live-p taiga-api-test-buffer))))))
+
+(ert-deftest taiga-api-unsuccessful-resolution ()
+  "Check that an unsuccessful resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve "project" :task 3)
+                    :type 'taiga-api-unresolved)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-throttled-resolution ()
+  "Check that a throttled resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve "project" :milestone "sprint0")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-resolution-request ()
+  "Check that request parameters for resolution are setup correctly."
+  (let ((func-used 0))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&us=5&milestone=some-milestone" url))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-resolve "some-project" :us 5 :milestone "some-milestone"))
+    (should (= 1 func-used))))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

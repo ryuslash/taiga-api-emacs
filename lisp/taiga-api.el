@@ -330,5 +330,22 @@ page respectively."
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
+(cl-defun taiga-api-resolve
+    (project &key us issue task milestone wikipage)
+  "Search PROJECT for any of the given parameters.
+
+PROJECT should be the slug of a project.  US, ISSUE and TASK
+should be the number of a user story, issue or task within the
+project.  MILESTONE and WIKIPAGE should be slugs for a
+milestone/sprint or wiki page."
+  (unless (not (string= *taiga-api--auth-token* ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (with-taiga-api-get-request "resolver"
+      (project us issue task milestone wikipage)
+    (200 (taiga-api--get-object #'identity))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
