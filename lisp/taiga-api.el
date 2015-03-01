@@ -107,7 +107,16 @@ remove the entry if the new value is `eql' to DEFAULT."
                (replace-regexp-in-string "-" "_" (symbol-name param))))
          `(when ,param
             (setq ,pvar (cons (cons ,paramname ,param) ,pvar))))
-      `(setq ,pvar (cons ',param ,pvar)))))
+      `(setq ,pvar (cons ',param ,pvar))))
+
+  (defun taiga-api--make-parameter-list (param pvar)
+    "Turn PARAM into a list and join it to PVAR."
+    (if (symbolp param)
+        (let ((paramname
+               (replace-regexp-in-string "-" "_" (symbol-name param))))
+          `(when ,param
+             (setq ,pvar (append ,pvar (list ,paramname ,param)))))
+      `(setq ,pvar (append ,pvar (list ,(car param) ,(cdr param)))))))
 
 (defmacro with-taiga-api-request (method endpoint &rest responses)
   "Prepare a request to Taiga using HTTP method METHOD to ENDPOINT.
@@ -117,7 +126,8 @@ respond to specific HTTP status codes."
   (declare (indent 3))
   (let ((svar (cl-gensym)))
     `(let ((url-request-extra-headers
-            '(("Content-Type" . "application/json")))
+            (append url-request-extra-headers
+                    '(("Content-Type" . "application/json"))))
            (url-request-method ,method))
        (with-current-buffer
            (url-retrieve-synchronously
@@ -146,6 +156,25 @@ specific HTTP status code."
                  params)
        (let ((url-request-data (json-encode ,pvar)))
          (with-taiga-api-request "POST" ,endpoint ,@responses)))))
+
+(defmacro with-taiga-api-get-request (endpoint params &rest responses)
+  "Prepare a GET request to Taiga using HTTP to ENDPOINT.
+
+PARAMS is a list of parameter specifiers.  They can be a symbol,
+in which case the parameter name will be derived from that
+symbol, or a pair `(parameter-name . value)'.  RESPONSES is a
+list of `(code action)' pairs which dictate how to respond to
+specific HTTP status codes."
+  (declare (indent 2))
+  (let ((pvar (cl-gensym)))
+    `(let ((url-request-extra-headers
+            `(("Authorization" . ,(concat "Bearer " *taiga-api--auth-token*))))
+           ,pvar)
+       ,@(mapcar (lambda (param) (taiga-api--make-parameter-list param pvar))
+                 params)
+       (with-taiga-api-request "GET"
+           (concat "api/v1/" ,endpoint "?" (url-build-query-string ,pvar))
+           ,@responses))))
 
 (defun taiga-api--get-object (constructor)
   "Use CONSTRUCTOR to build an object in the current buffer."
@@ -231,26 +260,13 @@ and also only required if EXISTING is nil."
   (unless (not (string= *taiga-api--auth-token* ""))
     (signal 'taiga-api-unauthenticated nil))
 
-  (let ((url-request-extra-headers
-         `(("Content-Type" . "application/json")
-           ("Authorization" . ,(concat "Bearer " *taiga-api--auth-token*))))
-        (url-request-method "GET"))
-    (with-current-buffer
-        (url-retrieve-synchronously
-         (concat taiga-api-url "api/v1/resolver?"
-                 (url-build-query-string `(("project" ,project)))))
-      (unwind-protect
-          (let ((status (taiga-api--get-status-code)))
-            (cl-ecase status
-              (200
-               (goto-char (point-min))
-               (search-forward "\n\n")
-               (json-read))
-              (404 (signal 'taiga-api-unresolved
-                           (taiga-api--get-object #'taiga-error-from-alist)))
-              (429 (signal 'taiga-api-throttled
-                           (taiga-api--get-object #'taiga-error-from-alist)))))
-        (kill-buffer)))))
+  (with-taiga-api-get-request "resolver" (project)
+    (200
+     (goto-char (point-min))
+     (search-forward "\n\n")
+     (json-read))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
 
 (defun taiga-api-resolve-user-story (project us)
   "Search PROJECT for the id of a user story with number US.
@@ -260,27 +276,13 @@ story within the project."
   (unless (not (string= *taiga-api--auth-token* ""))
     (signal 'taiga-api-unauthenticated nil))
 
-  (let ((url-request-extra-headers
-         `(("Content-Type" . "application/json")
-           ("Authorization" . ,(concat "Bearer " *taiga-api--auth-token*))))
-        (url-request-method "GET"))
-    (with-current-buffer
-        (url-retrieve-synchronously
-         (concat taiga-api-url "api/v1/resolver?"
-                 (url-build-query-string `(("project" ,project)
-                                           ("us" ,us)))))
-      (unwind-protect
-          (let ((status (taiga-api--get-status-code)))
-            (cl-ecase status
-              (200
-               (goto-char (point-min))
-               (search-forward "\n\n")
-               (json-read))
-              (404 (signal 'taiga-api-unresolved
-                           (taiga-api--get-object #'taiga-error-from-alist)))
-              (429 (signal 'taiga-api-throttled
-                           (taiga-api--get-object #'taiga-error-from-alist)))))
-        (kill-buffer)))))
+  (with-taiga-api-get-request "resolver" (project us)
+    (200
+     (goto-char (point-min))
+     (search-forward "\n\n")
+     (json-read))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
 
 (defun taiga-api-resolve-issue (project issue)
   "Search PROJECT for the id of an issue with number ISSUE.
@@ -290,27 +292,13 @@ the issue within the project."
   (unless (not (string= *taiga-api--auth-token* ""))
     (signal 'taiga-api-unauthenticated nil))
 
-  (let ((url-request-extra-headers
-         `(("Content-Type" . "application/json")
-           ("Authorization" . ,(concat "Bearer " *taiga-api--auth-token*))))
-        (url-request-method "GET"))
-    (with-current-buffer
-        (url-retrieve-synchronously
-         (concat taiga-api-url "api/v1/resolver?"
-                 (url-build-query-string `(("project" ,project)
-                                           ("issue" ,issue)))))
-      (unwind-protect
-          (let ((status (taiga-api--get-status-code)))
-            (cl-ecase status
-              (200
-               (goto-char (point-min))
-               (search-forward "\n\n")
-               (json-read))
-              (404 (signal 'taiga-api-unresolved
-                           (taiga-api--get-object #'taiga-error-from-alist)))
-              (429 (signal 'taiga-api-throttled
-                           (taiga-api--get-object #'taiga-error-from-alist)))))
-        (kill-buffer)))))
+  (with-taiga-api-get-request "resolver" (project issue)
+    (200
+     (goto-char (point-min))
+     (search-forward "\n\n")
+     (json-read))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
