@@ -304,5 +304,18 @@ task within the project."
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-error-from-alist)))))
 
+(defun taiga-api-resolve-milestone (project milestone)
+  "Search PROJECT for the id of a milestone with slug MILESTONE.
+
+PROJECT and MILESTONE should be the slugs of a project and
+milestone/sprint respectively."
+  (unless (not (string= *taiga-api--auth-token* ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (with-taiga-api-get-request "resolver" (project milestone)
+    (200 (taiga-api--get-object #'identity))
+    (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-error-from-alist)))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

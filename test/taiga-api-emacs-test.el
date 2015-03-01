@@ -398,7 +398,7 @@
                   :type 'taiga-api-unauthenticated)))
 
 (ert-deftest taiga-api-successful-task-resolution ()
-  "Check that a successful task resolution signals an error."
+  "Check that a successful task resolution returns an alist."
   (let ((*taiga-api--auth-token* "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((task . 1336) (project . 1)))
@@ -436,6 +436,55 @@
                          "{\"foo\": \"bar\"}")
                  (current-buffer)))))
     (taiga-api-resolve-task "some-project" 5)))
+
+(ert-deftest taiga-api-unauthenticated-milestone-resolution ()
+  "Check that an unauthenticated milestone resolution signals an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-resolve-milestone "project" "milestone")
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-milestone-resolution ()
+  "Check that a successful milestone resolution returns an alist."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (json-encode '((milestone . 1) (project . 1)))
+      (let ((result (taiga-api-resolve-milestone "project" "milestone")))
+        (should (= 1 (cdr (assq 'project result))))
+        (should (= 1 (cdr (assq 'milestone result))))
+        (should-not (buffer-live-p taiga-api-test-buffer))))))
+
+(ert-deftest taiga-api-unsuccessful-milestone-resolution ()
+  "Check that an unsuccessful milestone resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-milestone "project" "milestone")
+                    :type 'taiga-api-unresolved)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-throttled-milestone-resolution ()
+  "Check that a throttled milestone resolution signals an error."
+  (let ((*taiga-api--auth-token* "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-resolve-milestone "project" "milestone")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-milestone-resolution-request ()
+  "Check that request parameters for milestone resolution are setup correctly."
+  (let ((func-used 0))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&milestone=some-milestone" url))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-resolve-milestone "some-project" "some-milestone"))
+    (should (= 1 func-used))))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
