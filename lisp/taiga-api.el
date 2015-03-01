@@ -109,33 +109,43 @@ remove the entry if the new value is `eql' to DEFAULT."
             (setq ,pvar (cons (cons ,paramname ,param) ,pvar))))
       `(setq ,pvar (cons ',param ,pvar)))))
 
-(defmacro with-taiga-api-request (method endpoint params &rest responses)
+(defmacro with-taiga-api-request (method endpoint &rest responses)
   "Prepare a request to Taiga using HTTP method METHOD to ENDPOINT.
+
+RESPONSES is a list of `(code action)' pairs which dictate how to
+respond to specific HTTP status codes."
+  (declare (indent 3))
+  (let ((svar (cl-gensym)))
+    `(let ((url-request-extra-headers
+            '(("Content-Type" . "application/json")))
+           (url-request-method ,method))
+       (with-current-buffer
+           (url-retrieve-synchronously
+            (concat taiga-api-url "api/v1/" ,endpoint))
+         (unwind-protect
+             (let ((,svar (taiga-api--get-status-code)))
+               (cl-ecase ,svar
+                 ,@responses
+                 (429
+                  (signal 'taiga-api-throttled
+                          (taiga-api--get-object #'taiga-error-from-alist)))))
+           (kill-buffer))))))
+
+(defmacro with-taiga-api-post-request (endpoint params &rest responses)
+  "Prepare a POST request to Taiga using HTTP to ENDPOINT.
 
 PARAMS is a list of parameter specifications.  They can either be
 a symbol, in which case the parameter name will be derived from
 that symbol, or a pair `(parameter-name . value)'.  RESPONSES is
 a list of `(code action)' pairs which dictate how to respond to
-specific HTTP status codes."
-  (declare (indent 3))
-  (let ((pvar (cl-gensym))
-        (svar (cl-gensym)))
+specific HTTP status code."
+  (declare (indent 2))
+  (let ((pvar (cl-gensym)))
     `(let (,pvar)
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-cons param pvar))
                  params)
-       (let ((url-request-extra-headers '(("Content-Type" . "application/json")))
-             (url-request-method ,method)
-             (url-request-data (json-encode ,pvar)))
-         (with-current-buffer
-             (url-retrieve-synchronously (concat taiga-api-url "api/v1/" ,endpoint))
-           (unwind-protect
-               (let ((,svar (taiga-api--get-status-code)))
-                 (cl-ecase ,svar
-                   ,@responses
-                   (429
-                    (signal 'taiga-api-throttled
-                            (taiga-api--get-object #'taiga-error-from-alist)))))
-             (kill-buffer)))))))
+       (let ((url-request-data (json-encode ,pvar)))
+         (with-taiga-api-request "POST" ,endpoint ,@responses)))))
 
 (defun taiga-api--get-object (constructor)
   "Use CONSTRUCTOR to build an object in the current buffer."
@@ -155,8 +165,8 @@ specific HTTP status codes."
 
 (defun taiga-api-normal-login (username password)
   "Login a user USERNAME using PASSWORD."
-  (with-taiga-api-request
-      "POST" "auth" (("type" . "normal") username password)
+  (with-taiga-api-post-request
+      "auth" (("type" . "normal") username password)
     (200
      (let ((user (taiga-api--get-object#'taiga-user-from-alist)))
        (setq *taiga-api--auth-token* (taiga-user-auth-token user))
@@ -168,8 +178,8 @@ specific HTTP status codes."
   "Login a user through github using CODE.
 
 TOKEN can be used to accept an invitation to a project."
-  (with-taiga-api-request
-      "POST" "auth" (("type" . "github") code token)
+  (with-taiga-api-post-request
+      "auth" (("type" . "github") code token)
     (200
      (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
        (setq *taiga-api--auth-token* (taiga-user-auth-token user))
@@ -183,8 +193,8 @@ TOKEN can be used to accept an invitation to a project."
 USERNAME is the username with which you would like to log in.
 PASSWORD is the password you would like to use.  EMAIL is your
 email address.  FULL-NAME is your full name."
-  (with-taiga-api-request
-      "POST" "auth/register"
+  (with-taiga-api-post-request
+      "auth/register"
       (("type" . "public") username password email full-name)
     (201
      (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
@@ -203,8 +213,8 @@ invitation.  USERNAME is the user's username.  PASSWORD is the
 user's password.  EMAIL is the user's email address, this is only
 required if EXISTING is nil.  FULL-NAME is the user's full name
 and also only required if EXISTING is nil."
-  (with-taiga-api-request
-      "POST" "auth/register"
+  (with-taiga-api-post-request
+      "auth/register"
       (("type" . "public")
        existing token username password email full-name)
     (201
