@@ -200,6 +200,58 @@
                  (current-buffer)))))
     (taiga-api-normal-login "foo" "bar")))
 
+(ert-deftest taiga-api-github-login-request ()
+  "Check that request parameters for github login are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= (json-encode '(("token" . "bar")
+                                               ("code" . "foo")
+                                               ("type" . "github")))
+                                url-request-data))
+               (should (string= "https://api.taiga.io/api/v1/auth" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-github-login "foo" "bar")))
+
+(ert-deftest taiga-api-public-registration-request ()
+  "Check that request parameters for public registrations are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= (json-encode '(("full_name" . "Foo Bar")
+                                               ("email" . "foo@example.com")
+                                               ("password" . "bar")
+                                               ("username" . "foo")
+                                               ("type" . "public")))
+                                url-request-data))
+               (should (string= "https://api.taiga.io/api/v1/auth/register" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 201 CREATED\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-register-public "foo" "bar" "foo@example.com" "Foo Bar")))
+
+(ert-deftest taiga-api-private-registration-request ()
+  "Check that request parameters for private registrations are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= (json-encode '(("password" . "bar")
+                                               ("username" . "foo")
+                                               ("token" . "token")
+                                               ("existing" . t)
+                                               ("type" . "private")))
+                                url-request-data))
+               (should (string= "https://api.taiga.io/api/v1/auth/register" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 201 CREATED\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-register-private t "token" "foo" "bar")))
+
 ;;; Resolver
 
 (ert-deftest taiga-api-unauthenticated-project-resolution ()
@@ -302,6 +354,42 @@
       (should-error (taiga-api-resolve-issue "project" "issue")
                     :type 'taiga-api-throttled)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-project-resolution-request ()
+  "Check that request parameters for project resolution are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-resolve-project "some-project")))
+
+(ert-deftest taiga-api-user-story-resolution-request ()
+  "Check that request parameters for user story resolution are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&us=5" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-resolve-user-story "some-project" 5)))
+
+(ert-deftest taiga-api-issue-resolution-request ()
+  "Check that request paramaters for issue resolution are setup correctly."
+  (cl-letf (((symbol-function 'url-retrieve-synchronously)
+             (lambda (url &rest args)
+               (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&issue=5" url))
+               (with-current-buffer (generate-new-buffer "taiga-api-http_test")
+                 (insert "HTTP/1.1 200 OK\n"
+                         "\n"
+                         "{\"foo\": \"bar\"}")
+                 (current-buffer)))))
+    (taiga-api-resolve-issue "some-project" 5)))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
