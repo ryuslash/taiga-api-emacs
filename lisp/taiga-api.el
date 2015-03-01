@@ -115,8 +115,8 @@ remove the entry if the new value is `eql' to DEFAULT."
         (let ((paramname
                (replace-regexp-in-string "-" "_" (symbol-name param))))
           `(when ,param
-             (setq ,pvar (append ,pvar (list ,paramname ,param)))))
-      `(setq ,pvar (append ,pvar (list ,(car param) ,(cdr param)))))))
+             (setq ,pvar (append ,pvar (list (list ,paramname ,param))))))
+      `(setq ,pvar (append ,pvar (list (list ,(car param) ,(cdr param))))))))
 
 (defmacro with-taiga-api-request (method endpoint &rest responses)
   "Prepare a request to Taiga using HTTP method METHOD to ENDPOINT.
@@ -173,7 +173,7 @@ specific HTTP status codes."
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-list param pvar))
                  params)
        (with-taiga-api-request "GET"
-           (concat "api/v1/" ,endpoint "?" (url-build-query-string ,pvar))
+           (concat ,endpoint "?" (url-build-query-string ,pvar))
            ,@responses))))
 
 (defun taiga-api--get-object (constructor)
