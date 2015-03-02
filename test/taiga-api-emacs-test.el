@@ -26,13 +26,13 @@
 
 (require 'taiga-api)
 
-(ert-deftest taiga-error-from-alist ()
-  "Check that `taiga-error-from-alist' works properly."
-  (let ((err (taiga-error-from-alist '((_error_message . "foo")
+(ert-deftest taiga-api-error-from-alist ()
+  "Check that `taiga-api-error-from-alist' works properly."
+  (let ((err (taiga-api-error-from-alist '((_error_message . "foo")
                                        (_error_type . "bar")))))
-    (should (taiga-error-p err))
-    (should (string= (taiga-error-message err) "foo"))
-    (should (string= (taiga-error-type err) "bar"))))
+    (should (taiga-api-error-p err))
+    (should (string= (taiga-api-error-message err) "foo"))
+    (should (string= (taiga-api-error-type err) "bar"))))
 
 (ert-deftest taiga-user-from-alist ()
   "Check that `taiga-user-from-alist' works properly."

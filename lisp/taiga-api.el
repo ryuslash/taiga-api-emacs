@@ -57,11 +57,11 @@
   (define-error 'taiga-api-unauthenticated
     "You forgot to login"))
 
-(cl-defstruct taiga-error type message)
+(cl-defstruct taiga-api-error type message)
 
-(defun taiga-error-from-alist (alist)
-  "Turn ALIST into a `taiga-error'."
-  (make-taiga-error
+(defun taiga-api-error-from-alist (alist)
+  "Turn ALIST into a `taiga-api-error'."
+  (make-taiga-api-error
    :type (cdr (assq '_error_type alist))
    :message (cdr (assq '_error_message alist))))
 
@@ -127,7 +127,7 @@ respond to specific HTTP status codes."
                  ,@responses
                  (429
                   (signal 'taiga-api-throttled
-                          (taiga-api--get-object #'taiga-error-from-alist)))))
+                          (taiga-api--get-object #'taiga-api-error-from-alist)))))
            (kill-buffer))))))
 
 (defmacro with-taiga-api-post-request (endpoint params &rest responses)
@@ -190,7 +190,7 @@ specific HTTP status codes."
        (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
 (defun taiga-api-github-login (code &optional token)
   "Login a user through github using CODE.
@@ -219,7 +219,7 @@ email address.  FULL-NAME is your full name."
        (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
 (defun taiga-api-register-private
     (existing token username password &optional email full-name)
@@ -240,7 +240,7 @@ and also only required if EXISTING is nil."
        (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
 ;;; Resolver
 
@@ -298,7 +298,7 @@ milestone/sprint or wiki page."
       (project us issue task milestone wikipage)
     (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
-                 (taiga-api--get-object #'taiga-error-from-alist)))))
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
