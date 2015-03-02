@@ -76,7 +76,7 @@
 
 (ert-deftest taiga-api-successful-normal-login ()
   "Check that a successful login returns a user object."
-  (let (*taiga-api--auth-token*)
+  (let (taiga-api--auth-token)
     (with-taiga-api-synchronous-response
         200 nil (json-encode '(("username" . "foobar")
                                ("auth_token" . "normaltoken")))
@@ -154,7 +154,7 @@
 
 (ert-deftest taiga-api-successful-private-registration ()
   "Check that a successful private registration returns a user object."
-  (let (*taiga-api--auth-token*)
+  (let (taiga-api--auth-token)
     (with-taiga-api-synchronous-response
         201 nil (json-encode '(("username" . "foo")
                                ("auth_token" . "privatetoken")))
@@ -274,7 +274,7 @@
 
 (ert-deftest taiga-api-successful-project-resolution ()
   "Check that a successful project resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((project . 1)))
       (let ((result (taiga-api-resolve-project "project")))
@@ -283,7 +283,7 @@
 
 (ert-deftest taiga-api-unsuccessful-project-resolution ()
   "Check that an unsuccessful project resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-project "project")
@@ -292,7 +292,7 @@
 
 (ert-deftest taiga-api-throttled-project-resolution ()
   "Check that a throttled project resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-project "project")
@@ -307,7 +307,7 @@
 
 (ert-deftest taiga-api-successful-user-story-resolution ()
   "Check that a successful user story resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((us . 26) (project . 1)))
       (let ((result (taiga-api-resolve-user-story "project" "us")))
@@ -317,7 +317,7 @@
 
 (ert-deftest taiga-api-unsuccessful-user-story-resolution ()
   "Check that an unsuccessful user story resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-user-story "project" "us")
@@ -326,7 +326,7 @@
 
 (ert-deftest taiga-api-throttled-user-story-resolution ()
   "Check that a throttled user story resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-user-story "project" "us")
@@ -341,7 +341,7 @@
 
 (ert-deftest taiga-api-successful-issue-resolution ()
   "Check that a successful issue resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((issue . 5209) (project . 1)))
       (let ((result (taiga-api-resolve-issue "project" "issue")))
@@ -351,7 +351,7 @@
 
 (ert-deftest taiga-api-unsuccessful-issue-resolution ()
   "Check that an unsuccessful issue resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-issue "project" "issue")
@@ -360,7 +360,7 @@
 
 (ert-deftest taiga-api-throttled-issue-resolution ()
   "Check that a throttled issue resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-issue "project" "issue")
@@ -370,7 +370,7 @@
 (ert-deftest taiga-api-project-resolution-request ()
   "Check that request parameters for project resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
@@ -387,7 +387,7 @@
 (ert-deftest taiga-api-user-story-resolution-request ()
   "Check that request parameters for user story resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
@@ -404,7 +404,7 @@
 (ert-deftest taiga-api-issue-resolution-request ()
   "Check that request paramaters for issue resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
@@ -426,7 +426,7 @@
 
 (ert-deftest taiga-api-successful-task-resolution ()
   "Check that a successful task resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((task . 1336) (project . 1)))
       (let ((result (taiga-api-resolve-task "project" "task")))
@@ -436,7 +436,7 @@
 
 (ert-deftest taiga-api-unsuccessful-task-resolution ()
   "Check that an unsuccessful task resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-task "project" "task")
@@ -445,7 +445,7 @@
 
 (ert-deftest taiga-api-throttled-task-resolution ()
   "Check that a throttled task resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-task "project" "task")
@@ -455,7 +455,7 @@
 (ert-deftest taiga-api-task-resolution-request ()
   "Check that request parameters for task resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
@@ -477,7 +477,7 @@
 
 (ert-deftest taiga-api-successful-milestone-resolution ()
   "Check that a successful milestone resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((milestone . 1) (project . 1)))
       (let ((result (taiga-api-resolve-milestone "project" "milestone")))
@@ -487,7 +487,7 @@
 
 (ert-deftest taiga-api-unsuccessful-milestone-resolution ()
   "Check that an unsuccessful milestone resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-milestone "project" "milestone")
@@ -496,7 +496,7 @@
 
 (ert-deftest taiga-api-throttled-milestone-resolution ()
   "Check that a throttled milestone resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-milestone "project" "milestone")
@@ -506,7 +506,7 @@
 (ert-deftest taiga-api-milestone-resolution-request ()
   "Check that request parameters for milestone resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
@@ -528,7 +528,7 @@
 
 (ert-deftest taiga-api-successful-wiki-resolution ()
   "Check that a successful milestone resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((wikipage . 2) (project . 1)))
       (let ((result (taiga-api-resolve-wiki "project" "wikipage")))
@@ -538,7 +538,7 @@
 
 (ert-deftest taiga-api-unsuccessful-wiki-resolution ()
   "Check that a successful wiki resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-wiki "project" "wikipage")
@@ -547,7 +547,7 @@
 
 (ert-deftest taiga-api-throttled-wiki-resolution ()
   "Check that a throttled wiki resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve-wiki "project" "wikipage")
@@ -557,7 +557,7 @@
 (ert-deftest taiga-api-wiki-resolution-request ()
   "Check that request parameters for wiki page resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)
@@ -579,7 +579,7 @@
 
 (ert-deftest taiga-api-successful-resolution ()
   "Check that a successful resolution returns an alist."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((task . 1336)
                                (us . 26)
@@ -594,7 +594,7 @@
 
 (ert-deftest taiga-api-unsuccessful-resolution ()
   "Check that an unsuccessful resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve "project" :task 3)
@@ -603,7 +603,7 @@
 
 (ert-deftest taiga-api-throttled-resolution ()
   "Check that a throttled resolution signals an error."
-  (let ((*taiga-api--auth-token* "sometoken"))
+  (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-resolve "project" :milestone "sprint0")
@@ -613,7 +613,7 @@
 (ert-deftest taiga-api-resolution-request ()
   "Check that request parameters for resolution are setup correctly."
   (let ((func-used 0)
-        (*taiga-api--auth-token* "sometoken"))
+        (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
                  (cl-incf func-used)

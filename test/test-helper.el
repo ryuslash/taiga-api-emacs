@@ -49,8 +49,8 @@ this to inspect the contents of the buffer."
                  ("_error_message" . "Username or password does not matches user."))))
 
 (defmacro taiga-api-test--ensure-token (token &rest body)
-  "Test that the `*taiga-api--auth-token*' equals TOKEN after running BODY."
+  "Test that the `taiga-api--auth-token' equals TOKEN after running BODY."
   (declare (indent 1))
-  `(let ((*taiga-api--auth-token* ""))
+  `(let ((taiga-api--auth-token ""))
      ,@body
-     (should (string= *taiga-api--auth-token* ,token))))
+     (should (string= taiga-api--auth-token ,token))))

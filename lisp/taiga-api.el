@@ -38,7 +38,7 @@
   :group 'taiga-api
   :type 'string)
 
-(defvar *taiga-api--auth-token* ""
+(defvar taiga-api--auth-token ""
   "The auth token returned from Taiga.")
 
 (when (fboundp 'define-error)
@@ -168,7 +168,7 @@ specific HTTP status codes."
   (declare (indent 2))
   (let ((pvar (cl-gensym)))
     `(let ((url-request-extra-headers
-            `(("Authorization" . ,(concat "Bearer " *taiga-api--auth-token*))))
+            `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
            ,pvar)
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-list param pvar))
                  params)
@@ -198,7 +198,7 @@ specific HTTP status codes."
       "auth" (("type" . "normal") username password)
     (200
      (let ((user (taiga-api--get-object#'taiga-user-from-alist)))
-       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
@@ -211,7 +211,7 @@ TOKEN can be used to accept an invitation to a project."
       "auth" (("type" . "github") code token)
     (200
      (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
-       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-user-from-alist)))))
@@ -227,7 +227,7 @@ email address.  FULL-NAME is your full name."
       (("type" . "public") username password email full-name)
     (201
      (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
-       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
@@ -248,7 +248,7 @@ and also only required if EXISTING is nil."
        existing token username password email full-name)
     (201
      (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
-       (setq *taiga-api--auth-token* (taiga-user-auth-token user))
+       (setq taiga-api--auth-token (taiga-user-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-error-from-alist)))))
@@ -302,7 +302,7 @@ PROJECT should be the slug of a project.  US, ISSUE and TASK
 should be the number of a user story, issue or task within the
 project.  MILESTONE and WIKIPAGE should be slugs for a
 milestone/sprint or wiki page."
-  (unless (not (string= *taiga-api--auth-token* ""))
+  (unless (not (string= taiga-api--auth-token ""))
     (signal 'taiga-api-unauthenticated nil))
 
   (with-taiga-api-get-request "resolver"
