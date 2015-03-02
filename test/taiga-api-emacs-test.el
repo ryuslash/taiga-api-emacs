@@ -34,9 +34,9 @@
     (should (string= (taiga-api-error-message err) "foo"))
     (should (string= (taiga-api-error-type err) "bar"))))
 
-(ert-deftest taiga-user-from-alist ()
-  "Check that `taiga-user-from-alist' works properly."
-  (let ((detail (taiga-user-from-alist
+(ert-deftest taiga-api-user-from-alist ()
+  "Check that `taiga-api-user-from-alist' works properly."
+  (let ((detail (taiga-api-user-from-alist
                  '((auth_token . "abcdef")
                    (bio . "foo")
                    (is_active . t)
@@ -49,19 +49,19 @@
                    (photo . "//www.gravatar.com/avatar/12345")
                    (username . "foobar")
                    (big_photo . "//www.gravatar.com/avatar/12346")))))
-    (should (taiga-user-p detail))
-    (should (string= (taiga-user-auth-token detail) "abcdef"))
-    (should (string= (taiga-user-bio detail) "foo"))
-    (should (string= (taiga-user-is-active detail) t))
-    (should (string= (taiga-user-email detail) "foo@example.com"))
-    (should (null (taiga-user-github-id detail)))
-    (should (string= (taiga-user-color detail) "#FC8EAC"))
-    (should (string= (taiga-user-default-language detail) "en"))
-    (should (= (taiga-user-id detail) 7))
-    (should (string= (taiga-user-full-name detail) "Foo Bar"))
-    (should (string= (taiga-user-photo detail) "//www.gravatar.com/avatar/12345"))
-    (should (string= (taiga-user-username detail) "foobar"))
-    (should (string= (taiga-user-big-photo detail) "//www.gravatar.com/avatar/12346"))))
+    (should (taiga-api-user-p detail))
+    (should (string= (taiga-api-user-auth-token detail) "abcdef"))
+    (should (string= (taiga-api-user-bio detail) "foo"))
+    (should (string= (taiga-api-user-is-active detail) t))
+    (should (string= (taiga-api-user-email detail) "foo@example.com"))
+    (should (null (taiga-api-user-github-id detail)))
+    (should (string= (taiga-api-user-color detail) "#FC8EAC"))
+    (should (string= (taiga-api-user-default-language detail) "en"))
+    (should (= (taiga-api-user-id detail) 7))
+    (should (string= (taiga-api-user-full-name detail) "Foo Bar"))
+    (should (string= (taiga-api-user-photo detail) "//www.gravatar.com/avatar/12345"))
+    (should (string= (taiga-api-user-username detail) "foobar"))
+    (should (string= (taiga-api-user-big-photo detail) "//www.gravatar.com/avatar/12346"))))
 
 ;;; Auth
 
@@ -81,7 +81,7 @@
         200 nil (json-encode '(("username" . "foobar")
                                ("auth_token" . "normaltoken")))
       (taiga-api-test--ensure-token "normaltoken"
-        (should (taiga-user-p (taiga-api-normal-login "foo" "bar")))
+        (should (taiga-api-user-p (taiga-api-normal-login "foo" "bar")))
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-github-login ()
@@ -99,7 +99,7 @@
       200 nil (json-encode '(("username" . "foobar")
                              ("auth_token" . "githubtoken")))
     (taiga-api-test--ensure-token "githubtoken"
-      (should (taiga-user-p
+      (should (taiga-api-user-p
                (taiga-api-github-login "foo" "token")))
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
@@ -127,7 +127,7 @@
       201 nil (json-encode '(("username" . "foo")
                              ("auth_token" . "publictoken")))
     (taiga-api-test--ensure-token "publictoken"
-      (should (taiga-user-p
+      (should (taiga-api-user-p
                (taiga-api-register-public
                 "foo" "bar" "foo@example.com" "Foo Frobnicate")))
       (should-not (buffer-live-p taiga-api-test-buffer)))))
@@ -159,7 +159,7 @@
         201 nil (json-encode '(("username" . "foo")
                                ("auth_token" . "privatetoken")))
       (taiga-api-test--ensure-token "privatetoken"
-        (should (taiga-user-p
+        (should (taiga-api-user-p
                  (taiga-api-register-private
                   t "token" "username" "password")))
         (should-not (buffer-live-p taiga-api-test-buffer))))))

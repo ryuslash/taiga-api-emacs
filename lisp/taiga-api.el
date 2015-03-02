@@ -65,14 +65,14 @@
    :type (cdr (assq '_error_type alist))
    :message (cdr (assq '_error_message alist))))
 
-(cl-defstruct taiga-user
+(cl-defstruct taiga-api-user
   auth-token bio is-active email github-id color default-language
   full-name-display default-timezone id full-name photo username
   big-photo)
 
-(defun taiga-user-from-alist (alist)
-  "Turn ALIST into a `taiga-user'."
-  (make-taiga-user
+(defun taiga-api-user-from-alist (alist)
+  "Turn ALIST into a `taiga-api-user'."
+  (make-taiga-api-user
    :auth-token (cdr (assq 'auth_token alist))
    :bio (cdr (assq 'bio alist))
    :is-active (cdr (assq 'is_active alist))
@@ -186,8 +186,8 @@ specific HTTP status codes."
   (with-taiga-api-post-request
       "auth" (("type" . "normal") username password)
     (200
-     (let ((user (taiga-api--get-object#'taiga-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-user-auth-token user))
+     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
+       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -199,11 +199,11 @@ TOKEN can be used to accept an invitation to a project."
   (with-taiga-api-post-request
       "auth" (("type" . "github") code token)
     (200
-     (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-user-auth-token user))
+     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
+       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
-                 (taiga-api--get-object #'taiga-user-from-alist)))))
+                 (taiga-api--get-object #'taiga-api-user-from-alist)))))
 
 (defun taiga-api-register-public (username password email full-name)
   "Register a user without invitation on Taiga.
@@ -215,8 +215,8 @@ email address.  FULL-NAME is your full name."
       "auth/register"
       (("type" . "public") username password email full-name)
     (201
-     (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-user-auth-token user))
+     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
+       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -236,8 +236,8 @@ and also only required if EXISTING is nil."
       (("type" . "private")
        existing token username password email full-name)
     (201
-     (let ((user (taiga-api--get-object #'taiga-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-user-auth-token user))
+     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
+       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
