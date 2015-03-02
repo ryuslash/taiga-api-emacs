@@ -57,24 +57,13 @@
   (define-error 'taiga-api-unauthenticated
     "You forgot to login"))
 
-(unless (fboundp 'alist-get)
-  ;; Copied from subr.el in Emacs 25.0.50.1 (from 2015-02-15)
-  (defun alist-get (key alist &optional default remove)
-    "Get the value associated to KEY in ALIST.
-DEFAULT is the value to return if KEY is not found in ALIST.
-REMOVE, if non-nil, means that when setting this element, we should
-remove the entry if the new value is `eql' to DEFAULT."
-    (ignore remove) ;;Silence byte-compiler.
-    (let ((x (assq key alist)))
-      (if x (cdr x) default))))
-
 (cl-defstruct taiga-error type message)
 
 (defun taiga-error-from-alist (alist)
   "Turn ALIST into a `taiga-error'."
   (make-taiga-error
-   :type (alist-get '_error_type alist)
-   :message (alist-get '_error_message alist)))
+   :type (cdr (assq '_error_type alist))
+   :message (cdr (assq '_error_message alist))))
 
 (cl-defstruct taiga-user
   auth-token bio is-active email github-id color default-language
@@ -84,20 +73,20 @@ remove the entry if the new value is `eql' to DEFAULT."
 (defun taiga-user-from-alist (alist)
   "Turn ALIST into a `taiga-user'."
   (make-taiga-user
-   :auth-token (alist-get 'auth_token alist)
-   :bio (alist-get 'bio alist)
-   :is-active (alist-get 'is_active alist)
-   :email (alist-get 'email alist)
-   :github-id (alist-get 'github_id alist)
-   :color (alist-get 'color alist)
-   :default-language (alist-get 'default_language alist)
-   :full-name-display (alist-get 'full_name_display alist)
-   :default-timezone (alist-get 'default_timezone alist)
-   :id (alist-get 'id alist)
-   :full-name (alist-get 'full_name alist)
-   :photo (alist-get 'photo alist)
-   :username (alist-get 'username alist)
-   :big-photo (alist-get 'big_photo alist)))
+   :auth-token (cdr (assq 'auth_token alist))
+   :bio (cdr (assq 'bio alist))
+   :is-active (cdr (assq 'is_active alist))
+   :email (cdr (assq 'email alist))
+   :github-id (cdr (assq 'github_id alist))
+   :color (cdr (assq 'color alist))
+   :default-language (cdr (assq 'default_language alist))
+   :full-name-display (cdr (assq 'full_name_display alist))
+   :default-timezone (cdr (assq 'default_timezone alist))
+   :id (cdr (assq 'id alist))
+   :full-name (cdr (assq 'full_name alist))
+   :photo (cdr (assq 'photo alist))
+   :username (cdr (assq 'username alist))
+   :big-photo (cdr (assq 'big_photo alist))))
 
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
