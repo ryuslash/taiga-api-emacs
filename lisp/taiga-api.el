@@ -107,7 +107,7 @@
              (setq ,pvar (append ,pvar (list (list ,paramname ,param))))))
       `(setq ,pvar (append ,pvar (list (list ,(car param) ,(cdr param))))))))
 
-(defmacro with-taiga-api-request (method endpoint &rest responses)
+(defmacro taiga-api-with-request (method endpoint &rest responses)
   "Prepare a request to Taiga using HTTP method METHOD to ENDPOINT.
 
 RESPONSES is a list of `(code action)' pairs which dictate how to
@@ -130,7 +130,7 @@ respond to specific HTTP status codes."
                           (taiga-api--get-object #'taiga-api-error-from-alist)))))
            (kill-buffer))))))
 
-(defmacro with-taiga-api-post-request (endpoint params &rest responses)
+(defmacro taiga-api-with-post-request (endpoint params &rest responses)
   "Prepare a POST request to Taiga using HTTP to ENDPOINT.
 
 PARAMS is a list of parameter specifications.  They can either be
@@ -144,9 +144,9 @@ specific HTTP status code."
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-cons param pvar))
                  params)
        (let ((url-request-data (json-encode ,pvar)))
-         (with-taiga-api-request "POST" ,endpoint ,@responses)))))
+         (taiga-api-with-request "POST" ,endpoint ,@responses)))))
 
-(defmacro with-taiga-api-get-request (endpoint params &rest responses)
+(defmacro taiga-api-with-get-request (endpoint params &rest responses)
   "Prepare a GET request to Taiga using HTTP to ENDPOINT.
 
 PARAMS is a list of parameter specifiers.  They can be a symbol,
@@ -161,7 +161,7 @@ specific HTTP status codes."
            ,pvar)
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-list param pvar))
                  params)
-       (with-taiga-api-request "GET"
+       (taiga-api-with-request "GET"
            (concat ,endpoint "?" (url-build-query-string ,pvar))
            ,@responses))))
 
@@ -183,7 +183,7 @@ specific HTTP status codes."
 
 (defun taiga-api-normal-login (username password)
   "Login a user USERNAME using PASSWORD."
-  (with-taiga-api-post-request
+  (taiga-api-with-post-request
       "auth" (("type" . "normal") username password)
     (200
      (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
@@ -196,7 +196,7 @@ specific HTTP status codes."
   "Login a user through github using CODE.
 
 TOKEN can be used to accept an invitation to a project."
-  (with-taiga-api-post-request
+  (taiga-api-with-post-request
       "auth" (("type" . "github") code token)
     (200
      (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
@@ -211,7 +211,7 @@ TOKEN can be used to accept an invitation to a project."
 USERNAME is the username with which you would like to log in.
 PASSWORD is the password you would like to use.  EMAIL is your
 email address.  FULL-NAME is your full name."
-  (with-taiga-api-post-request
+  (taiga-api-with-post-request
       "auth/register"
       (("type" . "public") username password email full-name)
     (201
@@ -231,7 +231,7 @@ invitation.  USERNAME is the user's username.  PASSWORD is the
 user's password.  EMAIL is the user's email address, this is only
 required if EXISTING is nil.  FULL-NAME is the user's full name
 and also only required if EXISTING is nil."
-  (with-taiga-api-post-request
+  (taiga-api-with-post-request
       "auth/register"
       (("type" . "private")
        existing token username password email full-name)
@@ -294,7 +294,7 @@ milestone/sprint or wiki page."
   (unless (not (string= taiga-api--auth-token ""))
     (signal 'taiga-api-unauthenticated nil))
 
-  (with-taiga-api-get-request "resolver"
+  (taiga-api-with-get-request "resolver"
       (project us issue task milestone wikipage)
     (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
