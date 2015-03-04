@@ -1,7 +1,8 @@
 (require 'ert)
-(require 'undercover)
 
-(undercover "lisp/*.el")
+(if (require 'undercover nil :noerror)
+    (undercover "lisp/*.el")
+  (warn "Couldn't load undercover"))
 
 (defvar taiga-api-test-buffer nil)
 
