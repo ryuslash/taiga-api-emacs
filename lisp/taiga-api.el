@@ -88,6 +88,188 @@
    :username (cdr (assq 'username alist))
    :big-photo (cdr (assq 'big_photo alist))))
 
+(cl-defstruct taiga-api-wiki-page
+  html editions id version project slug content owner last-modified
+  created-date modified-date watchers)
+
+(defun taiga-api-wiki-page-from-alist (alist)
+  "Turn ALIST into a `taiga-api-wiki-page'."
+  (make-taiga-api-wiki-page
+   :html (cdr (assq 'html alist))
+   :editions (cdr (assq 'editions alist))
+   :id (cdr (assq 'id alist))
+   :version (cdr (assq 'version alist))
+   :project (cdr (assq 'project alist))
+   :slug (cdr (assq 'slug alist))
+   :content (cdr (assq 'content alist))
+   :owner (cdr (assq 'owner alist))
+   :last-modified (cdr (assq 'last_modified alist))
+   :created-date (cdr (assq 'created_date alist))
+   :modified-date (cdr (assq 'modified_date alist))
+   :watchers (cdr (assq 'watchers alist))))
+
+(cl-defstruct taiga-api-user-story
+  assigned-to backlog-order blocked-note blocked-note-html
+  client-requirement comment created-date description description-html
+  finish-date generated-from-issue id is-archived is-blocked is-closed
+  kanban-order milestone milestone-name milestone-slug modified-date
+  origin-issue owner points project ref sprint-order status subject tags
+  team-requirement total-points version watchers)
+
+(defun taiga-api-user-story-from-alist (alist)
+  "Turn ALIST into a `taiga-api-user-story'."
+  (make-taiga-api-user-story
+   :assigned-to (cdr (assq 'assigned_to alist))
+   :backlog-order (cdr (assq 'backlog_order alist))
+   :blocked-note (cdr (assq 'blocked_note alist))
+   :blocked-note-html (cdr (assq 'blocked_note_html alist))
+   :client-requirement (cdr (assq 'client_requirement alist))
+   :comment (cdr (assq 'comment alist))
+   :created-date (cdr (assq 'created_date alist))
+   :description (cdr (assq 'description alist))
+   :description-html (cdr (assq 'description_html alist))
+   :finish-date (cdr (assq 'finish_date alist))
+   :generated-from-issue (cdr (assq 'generated_from_issue alist))
+   :id (cdr (assq 'id alist))
+   :is-archived (cdr (assq 'is_archived alist))
+   :is-blocked (cdr (assq 'is_blocked alist))
+   :is-closed (cdr (assq 'is_closed alist))
+   :kanban-order (cdr (assq 'kanban_order alist))
+   :milestone (cdr (assq 'milestone alist))
+   :milestone-name (cdr (assq 'milestone_name alist))
+   :milestone-slug (cdr (assq 'milestone_slug alist))
+   :modified-date (cdr (assq 'modified_date alist))
+   :origin-issue (cdr (assq 'origin_issue alist))
+   :owner (cdr (assq 'owner alist))
+   :points (cdr (assq 'points alist))
+   :project (cdr (assq 'project alist))
+   :ref (cdr (assq 'ref alist))
+   :sprint-order (cdr (assq 'sprint_order alist))
+   :status (cdr (assq 'status alist))
+   :subject (cdr (assq 'subject alist))
+   :tags (cdr (assq 'tags alist))
+   :team-requirement (cdr (assq 'team_requirement alist))
+   :total-points (cdr (assq 'total_points alist))
+   :version (cdr (assq 'version alist))
+   :watchers (cdr (assq 'watchers alist))))
+
+(cl-defstruct taiga-api-issue
+  assigned-to blocked-note blocked-note-html comment created-date
+  description description-html finish-date id is-blocked is-closed
+  milestone modified-date finished-date owner project ref status severity
+  priority type subject tags version watchers generated-user-stories
+  votes neighbors)
+
+(cl-defstruct taiga-api-neighbors next previous)
+
+(cl-defstruct taiga-api-neighbor id ref subject)
+
+(defun taiga-api-issue-from-alist (alist)
+  "Turn ALIST into a `taiga-api-issue'."
+  (make-taiga-api-issue
+   :assigned-to (cdr (assq 'assigned_to alist))
+   :blocked-note (cdr (assq 'blocked_note alist))
+   :blocked-note-html (cdr (assq 'blocked_note_html alist))
+   :comment (cdr (assq 'comment alist))
+   :created-date (cdr (assq 'created_date alist))
+   :description (cdr (assq 'description alist))
+   :description-html (cdr (assq 'description_html alist))
+   :finish-date (cdr (assq 'finish_date alist))
+   :id (cdr (assq 'id alist))
+   :is-blocked (cdr (assq 'is_blocked alist))
+   :is-closed (cdr (assq 'is_closed alist))
+   :milestone (cdr (assq 'milestone alist))
+   :modified-date (cdr (assq 'modified_date alist))
+   :finished-date (cdr (assq 'finished_date alist))
+   :owner (cdr (assq 'owner alist))
+   :project (cdr (assq 'project alist))
+   :ref (cdr (assq 'ref alist))
+   :status (cdr (assq 'status alist))
+   :severity (cdr (assq 'severity alist))
+   :priority (cdr (assq 'priority alist))
+   :type (cdr (assq 'type alist))
+   :subject (cdr (assq 'subject alist))
+   :tags (cdr (assq 'tags alist))
+   :version (cdr (assq 'version alist))
+   :watchers (cdr (assq 'watchers alist))
+   :generated-user-stories (cdr (assq 'generated_user_stories alist))
+   :votes (cdr (assq 'votes alist))
+   :neighbors (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))
+
+(defun taiga-api-neighbors-from-alist (alist)
+  "Turn ALIST into a `taiga-api-neighbors'."
+  (let ((next-alist (cdr (assq 'next alist)))
+        (previous-alist (cdr (assq 'previous alist))))
+    (make-taiga-api-neighbors
+     :next (when next-alist (taiga-api-neighbor-from-alist next-alist))
+     :previous (when previous-alist (taiga-api-neighbor-from-alist previous-alist)))))
+
+(defun taiga-api-neighbor-from-alist (alist)
+  "Turn ALIST into a `taiga-api-neighbor'."
+  (make-taiga-api-neighbor
+   :id (cdr (assq 'id alist))
+   :ref (cdr (assq 'ref alist))
+   :subject (cdr (assq 'subject alist))))
+
+(cl-defstruct taiga-api-task
+  assigned-to blocked-note blocked-note-html comment milestone-slug
+  created-date description description-html id is-blocked is-closed
+  milestone modified-date finished-date owner project user-story ref
+  status subject tags us-order taskboard-order version is-iocaine
+  external-reference watchers neighbors)
+
+(defun taiga-api-task-from-alist (alist)
+  "Turn ALIST into a `taiga-api-task'."
+  (make-taiga-api-task
+   :assigned-to (cdr (assq 'assigned_to alist))
+   :blocked-note (cdr (assq 'blocked_note alist))
+   :blocked-note-html (cdr (assq 'blocked_note_html alist))
+   :comment (cdr (assq 'comment alist))
+   :milestone-slug (cdr (assq 'milestone_slug alist))
+   :created-date (cdr (assq 'created_date alist))
+   :description (cdr (assq 'description alist))
+   :description-html (cdr (assq 'description_html alist))
+   :id (cdr (assq 'id alist))
+   :is-blocked (cdr (assq 'is_blocked alist))
+   :is-closed (cdr (assq 'is_closed alist))
+   :milestone (cdr (assq 'milestone alist))
+   :modified-date (cdr (assq 'modified_date alist))
+   :finished-date (cdr (assq 'finished_date alist))
+   :owner (cdr (assq 'owner alist))
+   :project (cdr (assq 'project alist))
+   :user-story (cdr (assq 'user_story alist))
+   :ref (cdr (assq 'ref alist))
+   :status (cdr (assq 'status alist))
+   :subject (cdr (assq 'subject alist))
+   :tags (cdr (assq 'tags alist))
+   :us-order (cdr (assq 'us_order alist))
+   :taskboard-order (cdr (assq 'taskboard_order alist))
+   :version (cdr (assq 'version alist))
+   :is-iocaine (cdr (assq 'is_iocaine alist))
+   :external-reference (cdr (assq 'external_reference alist))
+   :watchers (cdr (assq 'watchers alist))
+   :neighbors (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))
+
+(cl-defstruct taiga-api-search-result
+  wikipages userstories issues tasks count)
+
+(defun taiga-api-search-result-from-alist (alist)
+  "Turn ALIST into a `taiga-api-search-result'."
+  (make-taiga-api-search-result
+   :wikipages (cl-coerce (mapcar #'taiga-api-wiki-page-from-alist
+                                 (cdr (assq 'wikipages alist)))
+                         'array)
+   :userstories (cl-coerce (mapcar #'taiga-api-user-story-from-alist
+                                   (cdr (assq 'userstories alist)))
+                           'array)
+   :issues (cl-coerce (mapcar #'taiga-api-issue-from-alist
+                              (cdr (assq 'issues alist)))
+                      'array)
+   :tasks (cl-coerce (mapcar #'taiga-api-task-from-alist
+                             (cdr (assq 'tasks alist)))
+                     'array)
+   :count (cdr (assq 'count alist))))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
