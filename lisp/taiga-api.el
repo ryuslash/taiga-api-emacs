@@ -65,14 +65,14 @@
    :type (cdr (assq '_error_type alist))
    :message (cdr (assq '_error_message alist))))
 
-(cl-defstruct taiga-api-user
+(cl-defstruct taiga-api-user-authentication
   auth-token bio is-active email github-id color default-language
   full-name-display default-timezone id full-name photo username
   big-photo)
 
-(defun taiga-api-user-from-alist (alist)
+(defun taiga-api-user-authentication-from-alist (alist)
   "Turn ALIST into a `taiga-api-user'."
-  (make-taiga-api-user
+  (make-taiga-api-user-authentication
    :auth-token (cdr (assq 'auth_token alist))
    :bio (cdr (assq 'bio alist))
    :is-active (cdr (assq 'is_active alist))
@@ -123,7 +123,7 @@
    :backlog-order (cdr (assq 'backlog_order alist))
    :blocked-note (cdr (assq 'blocked_note alist))
    :blocked-note-html (cdr (assq 'blocked_note_html alist))
-   :client-requirement (cdr (assq 'client_requirement alist))
+   :client-requirement (not (eql (cdr (assq 'client_requirement alist)) :json-false))
    :comment (cdr (assq 'comment alist))
    :created-date (cdr (assq 'created_date alist))
    :description (cdr (assq 'description alist))
@@ -131,9 +131,9 @@
    :finish-date (cdr (assq 'finish_date alist))
    :generated-from-issue (cdr (assq 'generated_from_issue alist))
    :id (cdr (assq 'id alist))
-   :is-archived (cdr (assq 'is_archived alist))
-   :is-blocked (cdr (assq 'is_blocked alist))
-   :is-closed (cdr (assq 'is_closed alist))
+   :is-archived (not (eql (cdr (assq 'is_archived alist)) :json-false))
+   :is-blocked (not (eql (cdr (assq 'is_blocked alist)) :json-false))
+   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))
    :kanban-order (cdr (assq 'kanban_order alist))
    :milestone (cdr (assq 'milestone alist))
    :milestone-name (cdr (assq 'milestone_name alist))
@@ -148,7 +148,7 @@
    :status (cdr (assq 'status alist))
    :subject (cdr (assq 'subject alist))
    :tags (cdr (assq 'tags alist))
-   :team-requirement (cdr (assq 'team_requirement alist))
+   :team-requirement (not (eql (cdr (assq 'team_requirement alist)) :json-false))
    :total-points (cdr (assq 'total_points alist))
    :version (cdr (assq 'version alist))
    :watchers (cdr (assq 'watchers alist))))
@@ -176,8 +176,8 @@
    :description-html (cdr (assq 'description_html alist))
    :finish-date (cdr (assq 'finish_date alist))
    :id (cdr (assq 'id alist))
-   :is-blocked (cdr (assq 'is_blocked alist))
-   :is-closed (cdr (assq 'is_closed alist))
+   :is-blocked (not (eql (cdr (assq 'is_blocked alist)) :json-false))
+   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))
    :milestone (cdr (assq 'milestone alist))
    :modified-date (cdr (assq 'modified_date alist))
    :finished-date (cdr (assq 'finished_date alist))
@@ -230,8 +230,8 @@
    :description (cdr (assq 'description alist))
    :description-html (cdr (assq 'description_html alist))
    :id (cdr (assq 'id alist))
-   :is-blocked (cdr (assq 'is_blocked alist))
-   :is-closed (cdr (assq 'is_closed alist))
+   :is-blocked (not (eql (cdr (assq 'is_blocked alist)) :json-false))
+   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))
    :milestone (cdr (assq 'milestone alist))
    :modified-date (cdr (assq 'modified_date alist))
    :finished-date (cdr (assq 'finished_date alist))
@@ -245,7 +245,7 @@
    :us-order (cdr (assq 'us_order alist))
    :taskboard-order (cdr (assq 'taskboard_order alist))
    :version (cdr (assq 'version alist))
-   :is-iocaine (cdr (assq 'is_iocaine alist))
+   :is-iocaine (not (eql (cdr (assq 'is_iocaine alist)) :json-false))
    :external-reference (cdr (assq 'external_reference alist))
    :watchers (cdr (assq 'watchers alist))
    :neighbors (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))
@@ -368,8 +368,10 @@ specific HTTP status codes."
   (taiga-api-with-post-request
       "auth" (("type" . "normal") username password)
     (200
-     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
+     (let ((user (taiga-api--get-object
+                  #'taiga-api-user-authentication-from-alist)))
+       (setq taiga-api--auth-token
+             (taiga-api-user-authentication-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -381,11 +383,13 @@ TOKEN can be used to accept an invitation to a project."
   (taiga-api-with-post-request
       "auth" (("type" . "github") code token)
     (200
-     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
+     (let ((user (taiga-api--get-object
+                  #'taiga-api-user-authentication-from-alist)))
+       (setq taiga-api--auth-token
+             (taiga-api-user-authentication-auth-token user))
        user))
     (400 (signal 'taiga-api-login-failed
-                 (taiga-api--get-object #'taiga-api-user-from-alist)))))
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
 (defun taiga-api-register-public (username password email full-name)
   "Register a user without invitation on Taiga.
@@ -397,8 +401,10 @@ email address.  FULL-NAME is your full name."
       "auth/register"
       (("type" . "public") username password email full-name)
     (201
-     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
+     (let ((user (taiga-api--get-object
+                  #'taiga-api-user-authentication-from-alist)))
+       (setq taiga-api--auth-token
+             (taiga-api-user-authentication-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -418,8 +424,10 @@ and also only required if EXISTING is nil."
       (("type" . "private")
        existing token username password email full-name)
     (201
-     (let ((user (taiga-api--get-object #'taiga-api-user-from-alist)))
-       (setq taiga-api--auth-token (taiga-api-user-auth-token user))
+     (let ((user (taiga-api--get-object
+                  #'taiga-api-user-authentication-from-alist)))
+       (setq taiga-api--auth-token
+             (taiga-api-user-authentication-auth-token user))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
