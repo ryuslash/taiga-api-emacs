@@ -55,7 +55,10 @@
     "Could not resolve the object")
 
   (define-error 'taiga-api-unauthenticated
-    "You forgot to login"))
+    "You forgot to login")
+
+  (define-error 'taiga-api-not-found
+    "Could not find the specified resource"))
 
 (cl-defstruct taiga-api-error type message)
 
@@ -488,6 +491,16 @@ milestone/sprint or wiki page."
       (project us issue task milestone wikipage)
     (200 (taiga-api--get-object #'identity))
     (404 (signal 'taiga-api-unresolved
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
+
+(defun taiga-api-search (project text)
+  "Search PROJECT for any story, issue or task containing TEXT."
+  (unless (not (string= taiga-api--auth-token ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (taiga-api-with-get-request "search" (project text)
+    (200 (taiga-api--get-object #'taiga-api-search-result-from-alist))
+    (404 (signal 'taiga-api-not-found
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
 (provide 'taiga-api)

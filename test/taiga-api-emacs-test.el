@@ -823,5 +823,54 @@
       (taiga-api-resolve "some-project" :us 5 :milestone "some-milestone"))
     (should (= 1 func-used))))
 
+;;; Search
+
+(ert-deftest taiga-api-search-request ()
+  "Check that request parameters for searches are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/search?project=1&text=design" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-search 1 "design"))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-unauthenticated-search ()
+  "Check that an unauthenticated search siganls an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-search 1 "design")
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-search ()
+  "Check that a successful search returns an alist."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (with-temp-buffer
+                  (insert-file-contents (concat taiga-api-test--location "files/search-results.json"))
+                  (buffer-substring-no-properties (point-min) (point-max)))
+      (let ((result (taiga-api-search 1 "design")))
+        (should (taiga-api-search-result-p result))
+        (should (arrayp (taiga-api-search-result-wikipages result)))
+        (should (arrayp (taiga-api-search-result-userstories result)))
+        (should (arrayp (taiga-api-search-result-issues result)))
+        (should (arrayp (taiga-api-search-result-tasks result)))
+        (should (= 4 (taiga-api-search-result-count result)))))))
+
+(ert-deftest taiga-api-throttled-search ()
+  "Check that a throttled search signals an error."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-search 1 "design")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
