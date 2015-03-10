@@ -273,6 +273,17 @@
                      'array)
    :count (cdr (assq 'count alist))))
 
+(cl-defstruct taiga-api-user-storage-data
+  key value created-date modified-date)
+
+(defun taiga-api-user-storage-data-from-alist (alist)
+  "Turn ALIST into a `taiga-api-user-storage-data'."
+  (make-taiga-api-user-storage-data
+   :key (cdr (assq 'key alist))
+   :value (cdr (assq 'value alist))
+   :created-date (cdr (assq 'created_date alist))
+   :modified-date (cdr (assq 'modified_date alist))))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."

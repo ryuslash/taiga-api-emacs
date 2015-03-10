@@ -258,6 +258,20 @@
           (taiga-api-search-result-tasks result))
     (should (= (taiga-api-search-result-count result) 4))))
 
+(ert-deftest taiga-api-user-storage-data-from-alist ()
+  "Check that `taiga-api-user-storage-data-from-alist' works properly."
+  (let ((result (with-temp-buffer
+                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data.json"))
+                  (taiga-api-user-storage-data-from-alist (json-read)))))
+    (should (taiga-api-user-storage-data-p result))
+    (should (string= (taiga-api-user-storage-data-key result)
+                     "favorite-forest"))
+    (should (string= (taiga-api-user-storage-data-value result) "Taiga"))
+    (should (string= (taiga-api-user-storage-data-created-date result)
+                     "2014-11-13T16:58:35+0000"))
+    (should (string= (taiga-api-user-storage-data-modified-date result)
+                     "2014-11-13T16:58:35+0000"))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
