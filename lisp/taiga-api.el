@@ -284,6 +284,10 @@
    :created-date (cdr (assq 'created_date alist))
    :modified-date (cdr (assq 'modified_date alist))))
 
+(defun taiga-api-many-user-storage-data-from-array (array)
+  "Turn ARRAY into a list of `taiga-api-user-storage-data'."
+  (mapcar #'taiga-api-user-storage-data-from-alist array))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
@@ -358,7 +362,9 @@ specific HTTP status codes."
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-list param pvar))
                  params)
        (taiga-api-with-request "GET"
-           (concat ,endpoint "?" (url-build-query-string ,pvar))
+           (if ,pvar
+               (concat ,endpoint "?" (url-build-query-string ,pvar))
+             ,endpoint)
            ,@responses))))
 
 (defun taiga-api--get-object (constructor)
@@ -504,6 +510,8 @@ milestone/sprint or wiki page."
     (404 (signal 'taiga-api-unresolved
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
+;;; Search
+
 (defun taiga-api-search (project text)
   "Search PROJECT for any story, issue or task containing TEXT."
   (unless (not (string= taiga-api--auth-token ""))
@@ -511,6 +519,18 @@ milestone/sprint or wiki page."
 
   (taiga-api-with-get-request "search" (project text)
     (200 (taiga-api--get-object #'taiga-api-search-result-from-alist))
+    (404 (signal 'taiga-api-not-found
+                 (taiga-api--get-object #'taiga-api-error-from-alist)))))
+
+;;; User story
+
+(defun taiga-api-list-user-storage ()
+  "List all the user's stored values."
+  (unless (not (string= taiga-api--auth-token ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (taiga-api-with-get-request "user-storage" ()
+    (200 (taiga-api--get-object #'taiga-api-many-user-storage-data-from-array))
     (404 (signal 'taiga-api-not-found
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
 

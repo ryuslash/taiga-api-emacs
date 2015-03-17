@@ -272,6 +272,19 @@
     (should (string= (taiga-api-user-storage-data-modified-date result)
                      "2014-11-13T16:58:35+0000"))))
 
+(ert-deftest taiga-api-many-user-storage-data-from-array ()
+  "Check that `taiga-api-many-user-storage-data-from-array' works properly."
+  (let ((result (with-temp-buffer
+                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data-list.json"))
+                  (taiga-api-many-user-storage-data-from-array (json-read)))))
+    (should (listp result))
+    (mapc (lambda (stor)
+            (should (taiga-api-user-storage-data-p stor))
+            (should (string= (taiga-api-user-storage-data-key stor) "favorite-forest"))
+            (should (string= (taiga-api-user-storage-data-value stor) "Taiga"))
+            (should (string= (taiga-api-user-storage-data-created-date stor) "2014-11-13T16:58:35+0000"))
+            (should (string= (taiga-api-user-storage-data-modified-date stor) "2014-11-13T16:58:35+0000")))
+          result)))
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
@@ -857,7 +870,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-unauthenticated-search ()
-  "Check that an unauthenticated search siganls an error."
+  "Check that an unauthenticated search signals an error."
   (taiga-api-test--ensure-token ""
     (should-error (taiga-api-search 1 "design")
                   :type 'taiga-api-unauthenticated)))
@@ -883,6 +896,57 @@
     (with-taiga-api-synchronous-response
         429 nil (taiga-api--json-encoded-error)
       (should-error (taiga-api-search 1 "design")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+;;; User storage
+
+(ert-deftest taiga-api-list-user-storage-request ()
+  "Check that request parameters for listing user storage are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/user-storage" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "[{\"foo\": \"bar\"}]")
+                   (current-buffer)))))
+      (taiga-api-list-user-storage))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-unauthenticated-list-user-storage ()
+  "Check that an unauthenticated search signals an error."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-list-user-storage)
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-successful-list-user-storage ()
+  "Check that a successful user storage listing returns an array."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (with-temp-buffer
+                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data-list.json"))
+                  (buffer-substring-no-properties (point-min) (point-max)))
+      (let ((result (taiga-api-list-user-storage)))
+        (should (listp result))
+        (mapc (lambda (stor)
+                (should (taiga-api-user-storage-data-p stor))
+                (should (string= "favorite-forest" (taiga-api-user-storage-data-key stor)))
+                (should (string= "Taiga" (taiga-api-user-storage-data-value stor)))
+                (should (string= "2014-11-13T16:58:35+0000" (taiga-api-user-storage-data-created-date stor)))
+                (should (string= "2014-11-13T16:58:35+0000" (taiga-api-user-storage-data-modified-date stor))))
+              result)))))
+
+(ert-deftest taiga-api-throttled-list-user-storage ()
+  "Check that a throttled user storage listing signals an error."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-list-user-storage)
                     :type 'taiga-api-throttled)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
