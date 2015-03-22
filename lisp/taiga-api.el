@@ -41,6 +41,9 @@
 (defvar taiga-api--auth-token ""
   "The auth token returned from Taiga.")
 
+(defvar taiga-api--cleanup-buffers t
+  "Whether or not to cleanup buffers after calling API functions.")
+
 (when (fboundp 'define-error)
   (define-error 'taiga-api-login-failed
     "Could not login to your Taiga instance")
@@ -328,7 +331,8 @@ respond to specific HTTP status codes."
                  (429
                   (signal 'taiga-api-throttled
                           (taiga-api--get-object #'taiga-api-error-from-alist)))))
-           (kill-buffer))))))
+           (when taiga-api--cleanup-buffers
+             (kill-buffer)))))))
 
 (defmacro taiga-api-with-post-request (endpoint params &rest responses)
   "Prepare a POST request to Taiga using HTTP to ENDPOINT.
