@@ -65,3 +65,15 @@ this to inspect the contents of the buffer."
      (concat taiga-api-test--location "files/" name ".json"))
     (goto-char (point-min))
     (funcall func (json-read))))
+
+(defmacro taiga-api-test-throttling (form)
+  "Define a test with NAME for a throttled request of FORM."
+  (let* ((name (car form))
+         (test-name (intern (concat (symbol-name name) "-throttled"))))
+    `(ert-deftest ,test-name ()
+       ,(concat "`" (symbol-name name)
+                "' raises `taiga-api-throttled' when throttled.")
+       (let ((taiga-api--auth-token "sometoken"))
+         (with-taiga-api-synchronous-response
+             429 nil (taiga-api--json-encoded-error)
+           (should-error ,form :type 'taiga-api-throttled))))))

@@ -317,23 +317,8 @@
                (taiga-api-github-login "foo" "token")))
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-normal-login ()
-  "Check that a throttled login signals the proper error."
-  (with-taiga-api-synchronous-response
-      429 nil (taiga-api--json-encoded-error)
-    (taiga-api-test--ensure-token ""
-      (should-error (taiga-api-normal-login "foo" "bar")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
-
-(ert-deftest taiga-api-throttled-github-login ()
-  "Check that a throttled github login signals the proper error."
-  (with-taiga-api-synchronous-response
-      429 nil (taiga-api--json-encoded-error)
-    (taiga-api-test--ensure-token ""
-      (should-error (taiga-api-github-login "foo" "token")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-normal-login "foo" "bar"))
+(taiga-api-test-throttling (taiga-api-github-login "foo" "token"))
 
 (ert-deftest taiga-api-successful-public-registration ()
   "Check that a successful public registration returns a user object."
@@ -356,15 +341,9 @@
                     :type 'taiga-api-registration-failed)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-public-registration ()
-  "Check that a throttled public registration signals an error."
-  (with-taiga-api-synchronous-response
-      429 nil (taiga-api--json-encoded-error)
-    (taiga-api-test--ensure-token ""
-      (should-error (taiga-api-register-public
-                     "foo" "bar" "foo@example.com" "Foo Frobnicate")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling
+  (taiga-api-register-public
+   "foo" "bar" "foo@example.com" "Foo Frobnicate"))
 
 (ert-deftest taiga-api-successful-private-registration ()
   "Check that a successful private registration returns a user object."
@@ -388,15 +367,8 @@
                     :type 'taiga-api-registration-failed)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-private-registration ()
-  "Check that a throttled private registration signals an error."
-  (with-taiga-api-synchronous-response
-      429 nil (taiga-api--json-encoded-error)
-    (taiga-api-test--ensure-token ""
-      (should-error (taiga-api-register-private
-                     t "token" "username" "password")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling
+  (taiga-api-register-private t "token" "username" "password"))
 
 (ert-deftest taiga-api-normal-login-request ()
   "Check that request parameters for normal login are setup correctly."
@@ -504,14 +476,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-project-resolution ()
-  "Check that a throttled project resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve-project "project")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-resolve-project "project"))
 
 (ert-deftest taiga-api-unauthenticated-user-story-resolution ()
   "Check that an unauthenticated user story resolution signals an error."
@@ -538,14 +503,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-user-story-resolution ()
-  "Check that a throttled user story resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve-user-story "project" "us")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-resolve-user-story "project" "us"))
 
 (ert-deftest taiga-api-unauthenticated-issue-resolution ()
   "Check that an unauthenticated issue resolution signals an error."
@@ -572,14 +530,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-issue-resolution ()
-  "Check that a throttled issue resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve-issue "project" "issue")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-resolve-issue "project" "issue"))
 
 (ert-deftest taiga-api-project-resolution-request ()
   "Check that request parameters for project resolution are setup correctly."
@@ -657,14 +608,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-task-resolution ()
-  "Check that a throttled task resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve-task "project" "task")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-resolve-task "project" "task"))
 
 (ert-deftest taiga-api-task-resolution-request ()
   "Check that request parameters for task resolution are setup correctly."
@@ -708,14 +652,8 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-milestone-resolution ()
-  "Check that a throttled milestone resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve-milestone "project" "milestone")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling
+  (taiga-api-resolve-milestone "project" "milestone"))
 
 (ert-deftest taiga-api-milestone-resolution-request ()
   "Check that request parameters for milestone resolution are setup correctly."
@@ -759,14 +697,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-wiki-resolution ()
-  "Check that a throttled wiki resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve-wiki "project" "wikipage")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-resolve-wiki "project" "wikipage"))
 
 (ert-deftest taiga-api-wiki-resolution-request ()
   "Check that request parameters for wiki page resolution are setup correctly."
@@ -815,14 +746,8 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
-(ert-deftest taiga-api-throttled-resolution ()
-  "Check that a throttled resolution signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-resolve "project" :milestone "sprint0")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling
+  (taiga-api-resolve "project" :milestone "sprint0"))
 
 (ert-deftest taiga-api-resolution-request ()
   "Check that request parameters for resolution are setup correctly."
@@ -881,14 +806,7 @@
         (should (arrayp (taiga-api-search-result-tasks result)))
         (should (= 4 (taiga-api-search-result-count result)))))))
 
-(ert-deftest taiga-api-throttled-search ()
-  "Check that a throttled search signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-search 1 "design")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-search 1 "design"))
 
 ;;; User storage
 
@@ -932,14 +850,7 @@
                 (should (string= "2014-11-13T16:58:35+0000" (taiga-api-user-storage-data-modified-date stor))))
               result)))))
 
-(ert-deftest taiga-api-throttled-list-user-storage ()
-  "Check that a throttled user storage listing signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-list-user-storage)
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-list-user-storage))
 
 (ert-deftest taiga-api-create-user-storage-request ()
   "Check chat request parameters for listing user storage are setup correctly."
@@ -980,14 +891,7 @@
         (should (string= (taiga-api-user-storage-data-modified-date result)
                          "2014-11-13T16:58:35+0000"))))))
 
-(ert-deftest taiga-api-create-user-storage-throttled ()
-  "Check that creating user storage being throttled signals an error."
-  (let ((taiga-api--auth-token "sometoken"))
-    (with-taiga-api-synchronous-response
-        429 nil (taiga-api--json-encoded-error)
-      (should-error (taiga-api-create-user-storage "foo" "bar")
-                    :type 'taiga-api-throttled)
-      (should-not (buffer-live-p taiga-api-test-buffer)))))
+(taiga-api-test-throttling (taiga-api-create-user-storage "foo" "bar"))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
