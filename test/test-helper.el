@@ -67,13 +67,24 @@ this to inspect the contents of the buffer."
     (funcall func (json-read))))
 
 (defmacro taiga-api-test-throttling (form)
-  "Define a test with NAME for a throttled request of FORM."
+  "Define a test for a throttled request of FORM."
   (let* ((name (car form))
          (test-name (intern (concat (symbol-name name) "-throttled"))))
     `(ert-deftest ,test-name ()
        ,(concat "`" (symbol-name name)
-                "' raises `taiga-api-throttled' when throttled.")
+                "' signals `taiga-api-throttled' when throttled.")
        (let ((taiga-api--auth-token "sometoken"))
          (with-taiga-api-synchronous-response
              429 nil (taiga-api--json-encoded-error)
            (should-error ,form :type 'taiga-api-throttled))))))
+
+(defmacro taiga-api-test-unauthenticated (form)
+  "Define a test for an unauthenticated request of FORM."
+  (let* ((name (car form))
+         (test-name
+          (intern (concat (symbol-name name) "-unauthenticated"))))
+    `(ert-deftest ,test-name ()
+       ,(concat "`" (symbol-name name)
+                "' signals `taiga-api-unauthenticated' when unauthenticated.")
+       (let ((taiga-api--auth-token ""))
+         (should-error ,form :type 'taiga-api-unauthenticated)))))

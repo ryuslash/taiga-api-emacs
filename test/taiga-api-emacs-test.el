@@ -452,12 +452,6 @@
 
 ;;; Resolver
 
-(ert-deftest taiga-api-unauthenticated-project-resolution ()
-  "Check that an unauthenticated project resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve-project "project")
-                  :type 'taiga-api-unauthenticated)))
-
 (ert-deftest taiga-api-successful-project-resolution ()
   "Check that a successful project resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
@@ -476,13 +470,8 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated (taiga-api-resolve-project "project"))
 (taiga-api-test-throttling (taiga-api-resolve-project "project"))
-
-(ert-deftest taiga-api-unauthenticated-user-story-resolution ()
-  "Check that an unauthenticated user story resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve-user-story "project" "us")
-                  :type 'taiga-api-unauthenticated)))
 
 (ert-deftest taiga-api-successful-user-story-resolution ()
   "Check that a successful user story resolution returns an alist."
@@ -503,13 +492,8 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated (taiga-api-resolve-user-story "project" "us"))
 (taiga-api-test-throttling (taiga-api-resolve-user-story "project" "us"))
-
-(ert-deftest taiga-api-unauthenticated-issue-resolution ()
-  "Check that an unauthenticated issue resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve-issue "project" "issue")
-                  :type 'taiga-api-unauthenticated)))
 
 (ert-deftest taiga-api-successful-issue-resolution ()
   "Check that a successful issue resolution returns an alist."
@@ -530,6 +514,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated (taiga-api-resolve-issue "project" "issue"))
 (taiga-api-test-throttling (taiga-api-resolve-issue "project" "issue"))
 
 (ert-deftest taiga-api-project-resolution-request ()
@@ -583,12 +568,6 @@
       (taiga-api-resolve-issue "some-project" 5))
     (should (= 1 func-used))))
 
-(ert-deftest taiga-api-unauthenticated-task-resolution ()
-  "Check that an unauthenticated task resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve-task "project" "task")
-                  :type 'taiga-api-unauthenticated)))
-
 (ert-deftest taiga-api-successful-task-resolution ()
   "Check that a successful task resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
@@ -608,6 +587,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated (taiga-api-resolve-task "project" "task"))
 (taiga-api-test-throttling (taiga-api-resolve-task "project" "task"))
 
 (ert-deftest taiga-api-task-resolution-request ()
@@ -626,12 +606,6 @@
                    (current-buffer)))))
       (taiga-api-resolve-task "some-project" 5))
     (should (= 1 func-used))))
-
-(ert-deftest taiga-api-unauthenticated-milestone-resolution ()
-  "Check that an unauthenticated milestone resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve-milestone "project" "milestone")
-                  :type 'taiga-api-unauthenticated)))
 
 (ert-deftest taiga-api-successful-milestone-resolution ()
   "Check that a successful milestone resolution returns an alist."
@@ -652,6 +626,8 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated
+  (taiga-api-resolve-milestone "project" "milestone"))
 (taiga-api-test-throttling
   (taiga-api-resolve-milestone "project" "milestone"))
 
@@ -672,12 +648,6 @@
       (taiga-api-resolve-milestone "some-project" "some-milestone"))
     (should (= 1 func-used))))
 
-(ert-deftest taiga-api-unauthenticated-wiki-resolution ()
-  "Check that an unauthenticated wiki resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve-wiki "project" "wikipage")
-                  :type 'taiga-api-unauthenticated)))
-
 (ert-deftest taiga-api-successful-wiki-resolution ()
   "Check that a successful milestone resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
@@ -697,6 +667,7 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated (taiga-api-resolve-wiki "project" "wikipage"))
 (taiga-api-test-throttling (taiga-api-resolve-wiki "project" "wikipage"))
 
 (ert-deftest taiga-api-wiki-resolution-request ()
@@ -715,12 +686,6 @@
                    (current-buffer)))))
       (taiga-api-resolve-wiki "some-project" "home"))
     (should (= 1 func-used))))
-
-(ert-deftest taiga-api-unauthenticated-resolution ()
-  "Check that an unauthenticated resolution signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-resolve "project" :us 1)
-                  :type 'taiga-api-unauthenticated)))
 
 (ert-deftest taiga-api-successful-resolution ()
   "Check that a successful resolution returns an alist."
@@ -746,6 +711,8 @@
                     :type 'taiga-api-unresolved)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(taiga-api-test-unauthenticated
+  (taiga-api-resolve "project" :milestone "sprint0"))
 (taiga-api-test-throttling
   (taiga-api-resolve "project" :milestone "sprint0"))
 
@@ -785,12 +752,6 @@
       (taiga-api-search 1 "design"))
     (should (= 1 func-used))))
 
-(ert-deftest taiga-api-unauthenticated-search ()
-  "Check that an unauthenticated search signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-search 1 "design")
-                  :type 'taiga-api-unauthenticated)))
-
 (ert-deftest taiga-api-successful-search ()
   "Check that a successful search returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
@@ -806,6 +767,7 @@
         (should (arrayp (taiga-api-search-result-tasks result)))
         (should (= 4 (taiga-api-search-result-count result)))))))
 
+(taiga-api-test-unauthenticated (taiga-api-search 1 "design"))
 (taiga-api-test-throttling (taiga-api-search 1 "design"))
 
 ;;; User storage
@@ -827,12 +789,6 @@
       (taiga-api-list-user-storage))
     (should (= 1 func-used))))
 
-(ert-deftest taiga-api-unauthenticated-list-user-storage ()
-  "Check that an unauthenticated search signals an error."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-list-user-storage)
-                  :type 'taiga-api-unauthenticated)))
-
 (ert-deftest taiga-api-successful-list-user-storage ()
   "Check that a successful user storage listing returns an array."
   (let ((taiga-api--auth-token "sometoken"))
@@ -850,6 +806,7 @@
                 (should (string= "2014-11-13T16:58:35+0000" (taiga-api-user-storage-data-modified-date stor))))
               result)))))
 
+(taiga-api-test-unauthenticated (taiga-api-list-user-storage))
 (taiga-api-test-throttling (taiga-api-list-user-storage))
 
 (ert-deftest taiga-api-create-user-storage-request ()
@@ -869,12 +826,6 @@
       (taiga-api-create-user-storage "foo" "bar"))
     (should (= 1 func-used))))
 
-(ert-deftest taiga-api-create-user-storage-unauthenticated ()
-  "Check that creating user storage unauthenticated fails."
-  (taiga-api-test--ensure-token ""
-    (should-error (taiga-api-create-user-storage "foo" "bar")
-                  :type 'taiga-api-unauthenticated)))
-
 (ert-deftest taiga-api-create-user-storage-success ()
   "Check that creating user storage successfully returns the object"
   (let ((taiga-api--auth-token "sometoken"))
@@ -891,6 +842,7 @@
         (should (string= (taiga-api-user-storage-data-modified-date result)
                          "2014-11-13T16:58:35+0000"))))))
 
+(taiga-api-test-unauthenticated (taiga-api-create-user-storage "foo" "bar"))
 (taiga-api-test-throttling (taiga-api-create-user-storage "foo" "bar"))
 
 (provide 'taiga-api-emacs-test)
