@@ -538,5 +538,15 @@ milestone/sprint or wiki page."
     (404 (signal 'taiga-api-not-found
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
 
+(defun taiga-api-create-user-storage (key value)
+  "Create a new user storage with key KEY and value VALUE."
+  (unless (not (string= taiga-api--auth-token ""))
+    (signal 'taiga-api-unauthenticated nil))
+
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token)))))
+   (taiga-api-with-post-request "user-storage" (key value)
+     (201 (taiga-api--get-object #'taiga-api-user-storage-data-from-alist)))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

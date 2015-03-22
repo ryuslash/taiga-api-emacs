@@ -941,5 +941,53 @@
                     :type 'taiga-api-throttled)
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
+(ert-deftest taiga-api-create-user-storage-request ()
+  "Check chat request parameters for listing user storage are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/user-storage" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 201 CREATED\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-create-user-storage "foo" "bar"))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-create-user-storage-unauthenticated ()
+  "Check that creating user storage unauthenticated fails."
+  (taiga-api-test--ensure-token ""
+    (should-error (taiga-api-create-user-storage "foo" "bar")
+                  :type 'taiga-api-unauthenticated)))
+
+(ert-deftest taiga-api-create-user-storage-success ()
+  "Check that creating user storage successfully returns the object"
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        201 nil (with-temp-buffer
+                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data.json"))
+                  (buffer-substring-no-properties (point-min) (point-max)))
+      (let ((result (taiga-api-create-user-storage "foo" "bar")))
+        (should (taiga-api-user-storage-data-p result))
+        (should (string= (taiga-api-user-storage-data-key result) "favorite-forest"))
+        (should (string= (taiga-api-user-storage-data-value result) "Taiga"))
+        (should (string= (taiga-api-user-storage-data-created-date result)
+                         "2014-11-13T16:58:35+0000"))
+        (should (string= (taiga-api-user-storage-data-modified-date result)
+                         "2014-11-13T16:58:35+0000"))))))
+
+(ert-deftest taiga-api-create-user-storage-throttled ()
+  "Check that creating user storage being throttled signals an error."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        429 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-create-user-storage "foo" "bar")
+                    :type 'taiga-api-throttled)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
