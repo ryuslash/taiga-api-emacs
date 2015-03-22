@@ -42,9 +42,9 @@
 
 (ert-deftest taiga-api-user-from-alist ()
   "Check that `taiga-api-user-from-alist' works properly."
-  (let ((detail (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/user-authentication-detail.json"))
-                  (taiga-api-user-authentication-from-alist (json-read)))))
+  (let ((detail (taiga-api-test--data
+                 "user-authentication-detail"
+                 #'taiga-api-user-authentication-from-alist)))
     (should (taiga-api-user-authentication-p detail))
     (should (string= (taiga-api-user-authentication-auth-token detail)
                      "eyJ1c2VyX2F1dGhlbnRpY2F0aW9uX2lkIjo3fq:1XmPud:LKXVD9Z0rmHJjiyy0m4YaaHlQS1"))
@@ -66,9 +66,8 @@
 
 (ert-deftest taiga-api-wiki-page-from-alist ()
   "Check that `taiga-api-wiki-page-from-alist' works properly."
-  (let ((page (with-temp-buffer
-                (insert-file-contents (concat taiga-api-test--location "files/wiki-page.json"))
-                (taiga-api-wiki-page-from-alist (json-read)))))
+  (let ((page (taiga-api-test--data
+               "wiki-page" #'taiga-api-wiki-page-from-alist)))
     (should (taiga-api-wiki-page-p page))
     (should (string= (taiga-api-wiki-page-html page)
                      "<p>Lorem ipsum dolor.</p>"))
@@ -89,9 +88,8 @@
 
 (ert-deftest taiga-api-user-story-from-alist ()
   "Check that `taiga-api-user-story-from-alist' works properly."
-  (let ((story (with-temp-buffer
-                 (insert-file-contents (concat taiga-api-test--location "files/user-story.json"))
-                 (taiga-api-user-story-from-alist (json-read)))))
+  (let ((story (taiga-api-test--data
+                "user-story" #'taiga-api-user-story-from-alist)))
     (should (taiga-api-user-story-p story))
     (should (= (taiga-api-user-story-assigned-to story) 19))
     (should (= (taiga-api-user-story-backlog-order story) 2))
@@ -140,9 +138,7 @@
 
 (ert-deftest taiga-api-issue-from-alist ()
   "Check that `taiga-api-issue-from-alist' works properly."
-  (let ((issue (with-temp-buffer
-                 (insert-file-contents (concat taiga-api-test--location "files/issue.json"))
-                 (taiga-api-issue-from-alist (json-read)))))
+  (let ((issue (taiga-api-test--data "issue" #'taiga-api-issue-from-alist)))
     (should (taiga-api-issue-p issue))
     (should (= (taiga-api-issue-assigned-to issue) 19))
     (should (string= (taiga-api-issue-blocked-note issue) ""))
@@ -182,18 +178,16 @@
 
 (ert-deftest taiga-api-neighbors-from-alist ()
   "Check that `taiga-api-neighbors-from-alist' works properly."
-  (let ((neighbors (with-temp-buffer
-                     (insert-file-contents (concat taiga-api-test--location "files/neighbors.json"))
-                     (taiga-api-neighbors-from-alist (json-read)))))
+  (let ((neighbors (taiga-api-test--data
+                    "neighbors" #'taiga-api-neighbors-from-alist)))
     (should (taiga-api-neighbors-p neighbors))
     (should (taiga-api-neighbor-p (taiga-api-neighbors-next neighbors)))
     (should (null (taiga-api-neighbors-previous neighbors)))))
 
 (ert-deftest taiga-api-neighbor-from-alist ()
   "Check that `taiga-api-neighbor-from-alist' works properly."
-  (let ((neighbor (with-temp-buffer
-                    (insert-file-contents (concat taiga-api-test--location "files/neighbor.json"))
-                    (taiga-api-neighbor-from-alist (json-read)))))
+  (let ((neighbor (taiga-api-test--data
+                   "neighbor" #'taiga-api-neighbor-from-alist)))
     (should (taiga-api-neighbor-p neighbor))
     (should (= (taiga-api-neighbor-id neighbor) 16))
     (should (= (taiga-api-neighbor-ref neighbor) 126))
@@ -202,9 +196,7 @@
 
 (ert-deftest taiga-api-task-from-alist ()
   "Check that `taiga-api-task-from-alist' works properly."
-  (let ((task (with-temp-buffer
-                (insert-file-contents (concat taiga-api-test--location "files/task.json"))
-                (taiga-api-task-from-alist (json-read)))))
+  (let ((task (taiga-api-test--data "task" #'taiga-api-task-from-alist)))
     (should (taiga-api-task-p task))
     (should (= (taiga-api-task-assigned-to task) 19))
     (should (string= (taiga-api-task-blocked-note task) ""))
@@ -244,9 +236,8 @@
 
 (ert-deftest taiga-api-search-result-from-alist ()
   "Check that `taiga-api-search-result-from-alist' works properly."
-  (let ((result (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/search-results.json"))
-                  (taiga-api-search-result-from-alist (json-read)))))
+  (let ((result (taiga-api-test--data
+                 "search-results" #'taiga-api-search-result-from-alist)))
     (should (taiga-api-search-result-p result))
     (mapc (lambda (page) (should (taiga-api-wiki-page-p page)))
           (taiga-api-search-result-wikipages result))
@@ -260,9 +251,9 @@
 
 (ert-deftest taiga-api-user-storage-data-from-alist ()
   "Check that `taiga-api-user-storage-data-from-alist' works properly."
-  (let ((result (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data.json"))
-                  (taiga-api-user-storage-data-from-alist (json-read)))))
+  (let ((result (taiga-api-test--data
+                 "user-storage-data"
+                 #'taiga-api-user-storage-data-from-alist)))
     (should (taiga-api-user-storage-data-p result))
     (should (string= (taiga-api-user-storage-data-key result)
                      "favorite-forest"))
@@ -274,9 +265,9 @@
 
 (ert-deftest taiga-api-many-user-storage-data-from-array ()
   "Check that `taiga-api-many-user-storage-data-from-array' works properly."
-  (let ((result (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data-list.json"))
-                  (taiga-api-many-user-storage-data-from-array (json-read)))))
+  (let ((result (taiga-api-test--data
+                 "user-storage-data-list"
+                 #'taiga-api-many-user-storage-data-from-array)))
     (should (listp result))
     (mapc (lambda (stor)
             (should (taiga-api-user-storage-data-p stor))

@@ -31,7 +31,8 @@ runs BODY.  It also creates a variable `taiga-api-test-buffer'
 which is bound to the buffer the response is written to.  Use
 this to inspect the contents of the buffer."
   (declare (indent 3))
-  `(let ((taiga-api-test-buffer (generate-new-buffer "taiga-api-http-test")))
+  `(let ((taiga-api-test-buffer
+          (generate-new-buffer "taiga-api-http-test")))
      (cl-letf (((symbol-function 'url-retrieve-synchronously)
                 (lambda (&rest args)
                   (ignore args)
@@ -46,8 +47,9 @@ this to inspect the contents of the buffer."
 
 (defun taiga-api--json-encoded-error ()
   "A json-encoded error to test with."
-  (json-encode '(("_error_type" . "taiga.base.exceptions.WrongArguments")
-                 ("_error_message" . "Username or password does not matches user."))))
+  (json-encode
+   '(("_error_type" . "taiga.base.exceptions.WrongArguments")
+     ("_error_message" . "Username or password does not matches user."))))
 
 (defmacro taiga-api-test--ensure-token (token &rest body)
   "Test that the `taiga-api--auth-token' equals TOKEN after running BODY."
@@ -55,3 +57,11 @@ this to inspect the contents of the buffer."
   `(let ((taiga-api--auth-token ""))
      ,@body
      (should (string= taiga-api--auth-token ,token))))
+
+(defun taiga-api-test--data (name func)
+  "Read test data from a file with name `files/NAME.json' using FUNC."
+  (with-temp-buffer
+    (insert-file-contents
+     (concat taiga-api-test--location "files/" name ".json"))
+    (goto-char (point-min))
+    (funcall func (json-read))))
