@@ -66,6 +66,14 @@ this to inspect the contents of the buffer."
     (goto-char (point-min))
     (funcall func (json-read))))
 
+(defun taiga-api-test--read (name)
+  "Read test data from a file named `files/NAME.json'."
+  (with-temp-buffer
+    (insert-file-contents
+     (concat taiga-api-test--location "files/" name ".json"))
+    (goto-char (point-min))
+    (buffer-substring-no-properties (point-min) (point-max))))
+
 (defmacro taiga-api-test-throttling (form)
   "Define a test for a throttled request of FORM."
   (let* ((name (car form))

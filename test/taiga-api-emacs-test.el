@@ -756,9 +756,7 @@
   "Check that a successful search returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
-        200 nil (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/search-results.json"))
-                  (buffer-substring-no-properties (point-min) (point-max)))
+        200 nil (taiga-api-test--read "search-results")
       (let ((result (taiga-api-search 1 "design")))
         (should (taiga-api-search-result-p result))
         (should (arrayp (taiga-api-search-result-wikipages result)))
@@ -793,9 +791,7 @@
   "Check that a successful user storage listing returns an array."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
-        200 nil (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data-list.json"))
-                  (buffer-substring-no-properties (point-min) (point-max)))
+        200 nil (taiga-api-test--read "user-storage-data-list")
       (let ((result (taiga-api-list-user-storage)))
         (should (listp result))
         (mapc (lambda (stor)
@@ -830,9 +826,7 @@
   "Check that creating user storage successfully returns the object"
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
-        201 nil (with-temp-buffer
-                  (insert-file-contents (concat taiga-api-test--location "files/user-storage-data.json"))
-                  (buffer-substring-no-properties (point-min) (point-max)))
+        201 nil (taiga-api-test--read "user-storage-data")
       (let ((result (taiga-api-create-user-storage "foo" "bar")))
         (should (taiga-api-user-storage-data-p result))
         (should (string= (taiga-api-user-storage-data-key result) "favorite-forest"))
