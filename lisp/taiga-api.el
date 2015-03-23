@@ -546,5 +546,16 @@ milestone/sprint or wiki page."
    (taiga-api-with-post-request "user-storage" (key value)
      (201 (taiga-api--get-object #'taiga-api-user-storage-data-from-alist)))))
 
+(defun taiga-api-get-user-storage (key)
+  "Get user storage data identified by KEY."
+  (taiga-api--check-authentication)
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
+        (endpoint (concat "user-storage/" (url-encode-url key))))
+    (taiga-api-with-get-request endpoint ()
+      (200 (taiga-api--get-object #'taiga-api-user-storage-data-from-alist))
+      (404 (signal 'taiga-api-not-found
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
