@@ -378,6 +378,12 @@ specific HTTP status codes."
     (search-forward "\n\n")
     (funcall constructor (json-read))))
 
+(defun taiga-api--check-authentication ()
+  "Check that the user is authenticated, signal an error otherwise."
+  (when (or (string= taiga-api--auth-token "")
+            (null taiga-api--auth-token))
+    (signal 'taiga-api-unauthenticated nil)))
+
 (defun taiga-api--get-status-code ()
   "Get the HTTP status code in the current buffer."
   (save-excursion
@@ -505,9 +511,7 @@ PROJECT should be the slug of a project.  US, ISSUE and TASK
 should be the number of a user story, issue or task within the
 project.  MILESTONE and WIKIPAGE should be slugs for a
 milestone/sprint or wiki page."
-  (unless (not (string= taiga-api--auth-token ""))
-    (signal 'taiga-api-unauthenticated nil))
-
+  (taiga-api--check-authentication)
   (taiga-api-with-get-request "resolver"
       (project us issue task milestone wikipage)
     (200 (taiga-api--get-object #'identity))
@@ -518,9 +522,7 @@ milestone/sprint or wiki page."
 
 (defun taiga-api-search (project text)
   "Search PROJECT for any story, issue or task containing TEXT."
-  (unless (not (string= taiga-api--auth-token ""))
-    (signal 'taiga-api-unauthenticated nil))
-
+  (taiga-api--check-authentication)
   (taiga-api-with-get-request "search" (project text)
     (200 (taiga-api--get-object #'taiga-api-search-result-from-alist))
     (404 (signal 'taiga-api-not-found
@@ -530,9 +532,7 @@ milestone/sprint or wiki page."
 
 (defun taiga-api-list-user-storage ()
   "List all the user's stored values."
-  (unless (not (string= taiga-api--auth-token ""))
-    (signal 'taiga-api-unauthenticated nil))
-
+  (taiga-api--check-authentication)
   (taiga-api-with-get-request "user-storage" ()
     (200 (taiga-api--get-object #'taiga-api-many-user-storage-data-from-array))
     (404 (signal 'taiga-api-not-found
@@ -540,9 +540,7 @@ milestone/sprint or wiki page."
 
 (defun taiga-api-create-user-storage (key value)
   "Create a new user storage with key KEY and value VALUE."
-  (unless (not (string= taiga-api--auth-token ""))
-    (signal 'taiga-api-unauthenticated nil))
-
+  (taiga-api--check-authentication)
   (let ((url-request-extra-headers
          `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token)))))
    (taiga-api-with-post-request "user-storage" (key value)
