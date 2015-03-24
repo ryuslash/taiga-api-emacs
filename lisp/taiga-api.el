@@ -334,21 +334,37 @@ respond to specific HTTP status codes."
            (when taiga-api--cleanup-buffers
              (kill-buffer)))))))
 
-(defmacro taiga-api-with-post-request (endpoint params &rest responses)
-  "Prepare a POST request to Taiga using HTTP to ENDPOINT.
+(defmacro taiga-api-with-non-get-request (method endpoint params &rest responses)
+  "Prepare a request to Taiga using METHOD to ENDPOINT.
 
-PARAMS is a list of parameter specifications.  They can either be
-a symbol, in which case the parameter name will be derived from
-that symbol, or a pair `(parameter-name . value)'.  RESPONSES is
-a list of `(code action)' pairs which dictate how to respond to
-specific HTTP status code."
-  (declare (indent 2))
+PARAMS is a list of parameter specifiers.  They can be a symbol,
+in which case the parameter name will be derived from that
+symbol, or a pair `(parameter-name . value)'.  RESPONSES is a
+list of `(code action)' pairs which dictate how to respond to
+specific HTTP status codes."
+  (declare (indent 3))
   (let ((pvar (cl-gensym)))
     `(let (,pvar)
        ,@(mapcar (lambda (param) (taiga-api--make-parameter-cons param pvar))
                  params)
        (let ((url-request-data (json-encode ,pvar)))
-         (taiga-api-with-request "POST" ,endpoint ,@responses)))))
+         (taiga-api-with-request ,method ,endpoint ,@responses)))))
+
+(defmacro taiga-api-with-post-request (endpoint params &rest responses)
+  "Prepare a POST request to Taiga using HTTP to ENDPOINT.
+
+For more information on the PARAMS and RESPONSES arguments see
+`taiga-api-with-non-get-request'."
+  (declare (indent 2))
+  `(taiga-api-with-non-get-request "POST" ,endpoint ,params ,@responses))
+
+(defmacro taiga-api-with-patch-request (endpoint params &rest responses)
+  "Prepare a PATCH request to Taiga to ENDPOINT.
+
+For more information on the PARAMS and RESPONSES arguments see
+`taiga-api-with-non-get-request'."
+  (declare (indent 2))
+  `(taiga-api-with-non-get-request "PATCH" ,endpoint ,params ,@responses))
 
 (defmacro taiga-api-with-get-request (endpoint params &rest responses)
   "Prepare a GET request to Taiga using HTTP to ENDPOINT.
@@ -553,6 +569,17 @@ milestone/sprint or wiki page."
          `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
         (endpoint (concat "user-storage/" (url-encode-url key))))
     (taiga-api-with-get-request endpoint ()
+      (200 (taiga-api--get-object #'taiga-api-user-storage-data-from-alist))
+      (404 (signal 'taiga-api-not-found
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
+(defun taiga-api-edit-user-storage (key value)
+  "Replace the user storage data identified by KEY with VALUE."
+  (taiga-api--check-authentication)
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
+        (endpoint (concat "user-storage/" (url-encode-url key))))
+    (taiga-api-with-patch-request endpoint (value)
       (200 (taiga-api--get-object #'taiga-api-user-storage-data-from-alist))
       (404 (signal 'taiga-api-not-found
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))

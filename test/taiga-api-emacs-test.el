@@ -276,6 +276,7 @@
             (should (string= (taiga-api-user-storage-data-created-date stor) "2014-11-13T16:58:35+0000"))
             (should (string= (taiga-api-user-storage-data-modified-date stor) "2014-11-13T16:58:35+0000")))
           result)))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
@@ -881,6 +882,52 @@
 
 (taiga-api-test-unauthenticated (taiga-api-get-user-storage "foo"))
 (taiga-api-test-throttling (taiga-api-get-user-storage "foo"))
+
+(ert-deftest taiga-api-edit-user-storage-request ()
+  "Check that request parameters for editing user storage are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= url-request-method "PATCH"))
+                 (should (string= "https://api.taiga.io/api/v1/user-storage/foo" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should (string= (json-encode '(("value" . "bar")))
+                                  url-request-data))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-edit-user-storage "foo" "bar"))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-unsuccessful-edit-user-data ()
+  "Check that an unsuccessful user data edit signals an error."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-edit-user-storage "foo" "bar")
+                    :type 'taiga-api-not-found)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-successful-edit-user-data ()
+  "Check that a successful user data edit returns the changed object."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (taiga-api-test--read "user-storage-data")
+      (let ((result (taiga-api-edit-user-storage "foo" "bar")))
+        (should (taiga-api-user-storage-data-p result))
+        (should (string= (taiga-api-user-storage-data-key result) "favorite-forest"))
+        (should (string= (taiga-api-user-storage-data-value result) "Taiga"))
+        (should (string= (taiga-api-user-storage-data-created-date result)
+                         "2014-11-13T16:58:35+0000"))
+        (should (string= (taiga-api-user-storage-data-modified-date result)
+                         "2014-11-13T16:58:35+0000"))))))
+
+(taiga-api-test-unauthenticated (taiga-api-edit-user-storage "foo" "bar"))
+(taiga-api-test-throttling (taiga-api-edit-user-storage "foo" "bar"))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
