@@ -815,6 +815,9 @@
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/user-storage" url))
                  (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should (string= (json-encode '(("value" . "bar")
+                                                 ("key" . "foo")))
+                                  url-request-data))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 201 CREATED\n"
                            "\n"
