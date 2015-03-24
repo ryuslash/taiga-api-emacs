@@ -31,7 +31,7 @@
                            buffer-file-name)))
 
 (ert-deftest taiga-api-error-from-alist ()
-  "Check that `taiga-api-error-from-alist' works properly."
+  "`taiga-api-error-from-alist' works properly."
   (let ((err (with-temp-buffer
                (insert "{\"_error_message\": \"foo\", \"_error_type\": \"bar\"}")
                (goto-char (point-min))
@@ -41,7 +41,7 @@
     (should (string= (taiga-api-error-type err) "bar"))))
 
 (ert-deftest taiga-api-user-from-alist ()
-  "Check that `taiga-api-user-from-alist' works properly."
+  "`taiga-api-user-from-alist' works properly."
   (let ((detail (taiga-api-test--data
                  "user-authentication-detail"
                  #'taiga-api-user-authentication-from-alist)))
@@ -65,7 +65,7 @@
                      "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"))))
 
 (ert-deftest taiga-api-wiki-page-from-alist ()
-  "Check that `taiga-api-wiki-page-from-alist' works properly."
+  "`taiga-api-wiki-page-from-alist' works properly."
   (let ((page (taiga-api-test--data
                "wiki-page" #'taiga-api-wiki-page-from-alist)))
     (should (taiga-api-wiki-page-p page))
@@ -137,7 +137,7 @@
     (should (equal (taiga-api-user-story-watchers story) []))))
 
 (ert-deftest taiga-api-issue-from-alist ()
-  "Check that `taiga-api-issue-from-alist' works properly."
+  "`taiga-api-issue-from-alist' works properly."
   (let ((issue (taiga-api-test--data "issue" #'taiga-api-issue-from-alist)))
     (should (taiga-api-issue-p issue))
     (should (= (taiga-api-issue-assigned-to issue) 19))
@@ -177,7 +177,7 @@
     (should (taiga-api-neighbors-p (taiga-api-issue-neighbors issue)))))
 
 (ert-deftest taiga-api-neighbors-from-alist ()
-  "Check that `taiga-api-neighbors-from-alist' works properly."
+  "`taiga-api-neighbors-from-alist' works properly."
   (let ((neighbors (taiga-api-test--data
                     "neighbors" #'taiga-api-neighbors-from-alist)))
     (should (taiga-api-neighbors-p neighbors))
@@ -185,7 +185,7 @@
     (should (null (taiga-api-neighbors-previous neighbors)))))
 
 (ert-deftest taiga-api-neighbor-from-alist ()
-  "Check that `taiga-api-neighbor-from-alist' works properly."
+  "`taiga-api-neighbor-from-alist' works properly."
   (let ((neighbor (taiga-api-test--data
                    "neighbor" #'taiga-api-neighbor-from-alist)))
     (should (taiga-api-neighbor-p neighbor))
@@ -195,7 +195,7 @@
                      "Support for bulk actions"))))
 
 (ert-deftest taiga-api-task-from-alist ()
-  "Check that `taiga-api-task-from-alist' works properly."
+  "`taiga-api-task-from-alist' works properly."
   (let ((task (taiga-api-test--data "task" #'taiga-api-task-from-alist)))
     (should (taiga-api-task-p task))
     (should (= (taiga-api-task-assigned-to task) 19))
@@ -235,7 +235,7 @@
     (should (taiga-api-neighbors-p (taiga-api-task-neighbors task)))))
 
 (ert-deftest taiga-api-search-result-from-alist ()
-  "Check that `taiga-api-search-result-from-alist' works properly."
+  "`taiga-api-search-result-from-alist' works properly."
   (let ((result (taiga-api-test--data
                  "search-results" #'taiga-api-search-result-from-alist)))
     (should (taiga-api-search-result-p result))
@@ -250,7 +250,7 @@
     (should (= (taiga-api-search-result-count result) 4))))
 
 (ert-deftest taiga-api-user-storage-data-from-alist ()
-  "Check that `taiga-api-user-storage-data-from-alist' works properly."
+  "`taiga-api-user-storage-data-from-alist' works properly."
   (let ((result (taiga-api-test--data
                  "user-storage-data"
                  #'taiga-api-user-storage-data-from-alist)))
@@ -264,7 +264,7 @@
                      "2014-11-13T16:58:35+0000"))))
 
 (ert-deftest taiga-api-many-user-storage-data-from-array ()
-  "Check that `taiga-api-many-user-storage-data-from-array' works properly."
+  "`taiga-api-many-user-storage-data-from-array' works properly."
   (let ((result (taiga-api-test--data
                  "user-storage-data-list"
                  #'taiga-api-many-user-storage-data-from-array)))
@@ -280,7 +280,7 @@
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
-  "Check that an unsuccessful login signals an error."
+  "An unsuccessful login signals `taiga-api-login-failed'."
   (with-taiga-api-synchronous-response
       400 nil (taiga-api--json-encoded-error)
     (taiga-api-test--ensure-token ""
@@ -289,7 +289,7 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-successful-normal-login ()
-  "Check that a successful login returns a user object."
+  "A successful login returns a `taiga-api-user-authentication'."
   (let (taiga-api--auth-token)
     (with-taiga-api-synchronous-response
         200 nil (json-encode '(("username" . "foobar")
@@ -300,7 +300,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-github-login ()
-  "Check that an unsuccessful github login signals an error."
+  "An unsuccessful github login signals `taiga-api-login-failed'."
   (with-taiga-api-synchronous-response
       400 nil (taiga-api--json-encoded-error)
     (taiga-api-test--ensure-token ""
@@ -309,7 +309,7 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-successful-github-login ()
-  "Check that a successful github login returns a user object."
+  "A successful github login returns a `taiga-api-user-authentication'."
   (with-taiga-api-synchronous-response
       200 nil (json-encode '(("username" . "foobar")
                              ("auth_token" . "githubtoken")))
@@ -322,7 +322,7 @@
 (taiga-api-test-throttling (taiga-api-github-login "foo" "token"))
 
 (ert-deftest taiga-api-successful-public-registration ()
-  "Check that a successful public registration returns a user object."
+  "A successful public registration returns a `taiga-api-user-authentication'."
   (with-taiga-api-synchronous-response
       201 nil (json-encode '(("username" . "foo")
                              ("auth_token" . "publictoken")))
@@ -333,7 +333,7 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-unsuccessful-public-registration ()
-  "Check that a successful public registration signals an error."
+  "A successful public registration signals `taiga-api-registration-failed'."
   (with-taiga-api-synchronous-response
       400 nil (taiga-api--json-encoded-error)
     (taiga-api-test--ensure-token ""
@@ -347,7 +347,7 @@
    "foo" "bar" "foo@example.com" "Foo Frobnicate"))
 
 (ert-deftest taiga-api-successful-private-registration ()
-  "Check that a successful private registration returns a user object."
+  "A successful private registration returns a `taiga-api-user-authentication'."
   (let (taiga-api--auth-token)
     (with-taiga-api-synchronous-response
         201 nil (json-encode '(("username" . "foo")
@@ -359,7 +359,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-private-registration ()
-  "Check that an unsuccessful private registration signals an error."
+  "An unsuccessful private registration signals `taiga-api-registration-failed'."
   (with-taiga-api-synchronous-response
       400 nil (taiga-api--json-encoded-error)
     (taiga-api-test--ensure-token ""
@@ -372,7 +372,7 @@
   (taiga-api-register-private t "token" "username" "password"))
 
 (ert-deftest taiga-api-normal-login-request ()
-  "Check that request parameters for normal login are setup correctly."
+  "Request parameters for normal login are setup correctly."
   (let ((func-used 0))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
@@ -391,7 +391,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-github-login-request ()
-  "Check that request parameters for github login are setup correctly."
+  "Request parameters for github login are setup correctly."
   (let ((func-used 0))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
@@ -410,7 +410,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-public-registration-request ()
-  "Check that request parameters for public registrations are setup correctly."
+  "Request parameters for public registrations are setup correctly."
   (let ((func-used 0))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
@@ -431,7 +431,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-private-registration-request ()
-  "Check that request parameters for private registrations are setup correctly."
+  "Request parameters for private registrations are setup correctly."
   (let ((func-used 0))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
                (lambda (url &rest args)
@@ -454,7 +454,7 @@
 ;;; Resolver
 
 (ert-deftest taiga-api-successful-project-resolution ()
-  "Check that a successful project resolution returns an alist."
+  "A successful project resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((project . 1)))
@@ -463,7 +463,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-project-resolution ()
-  "Check that an unsuccessful project resolution signals an error."
+  "An unsuccessful project resolution signals `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -475,7 +475,7 @@
 (taiga-api-test-throttling (taiga-api-resolve-project "project"))
 
 (ert-deftest taiga-api-successful-user-story-resolution ()
-  "Check that a successful user story resolution returns an alist."
+  "A successful user story resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((us . 26) (project . 1)))
@@ -485,7 +485,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-user-story-resolution ()
-  "Check that an unsuccessful user story resolution signals an error."
+  "An unsuccessful user story resolution signals `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -497,7 +497,7 @@
 (taiga-api-test-throttling (taiga-api-resolve-user-story "project" "us"))
 
 (ert-deftest taiga-api-successful-issue-resolution ()
-  "Check that a successful issue resolution returns an alist."
+  "A successful issue resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((issue . 5209) (project . 1)))
@@ -507,7 +507,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-issue-resolution ()
-  "Check that an unsuccessful issue resolution signals an error."
+  "An unsuccessful issue resolution signals `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -519,7 +519,7 @@
 (taiga-api-test-throttling (taiga-api-resolve-issue "project" "issue"))
 
 (ert-deftest taiga-api-project-resolution-request ()
-  "Check that request parameters for project resolution are setup correctly."
+  "Request parameters for project resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -536,7 +536,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-user-story-resolution-request ()
-  "Check that request parameters for user story resolution are setup correctly."
+  "Request parameters for user story resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -553,7 +553,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-issue-resolution-request ()
-  "Check that request paramaters for issue resolution are setup correctly."
+  "Request paramaters for issue resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -570,7 +570,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-task-resolution ()
-  "Check that a successful task resolution returns an alist."
+  "A successful task resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((task . 1336) (project . 1)))
@@ -580,7 +580,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-task-resolution ()
-  "Check that an unsuccessful task resolution signals an error."
+  "An unsuccessful task resolution signals `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -592,7 +592,7 @@
 (taiga-api-test-throttling (taiga-api-resolve-task "project" "task"))
 
 (ert-deftest taiga-api-task-resolution-request ()
-  "Check that request parameters for task resolution are setup correctly."
+  "Request parameters for task resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -609,7 +609,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-milestone-resolution ()
-  "Check that a successful milestone resolution returns an alist."
+  "A successful milestone resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((milestone . 1) (project . 1)))
@@ -619,7 +619,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-milestone-resolution ()
-  "Check that an unsuccessful milestone resolution signals an error."
+  "An unsuccessful milestone resolution signals `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -633,7 +633,7 @@
   (taiga-api-resolve-milestone "project" "milestone"))
 
 (ert-deftest taiga-api-milestone-resolution-request ()
-  "Check that request parameters for milestone resolution are setup correctly."
+  "Request parameters for milestone resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -650,7 +650,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-wiki-resolution ()
-  "Check that a successful milestone resolution returns an alist."
+  "A successful milestone resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((wikipage . 2) (project . 1)))
@@ -660,7 +660,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-wiki-resolution ()
-  "Check that a successful wiki resolution returns an alist."
+  "An unsuccessful wiki resolution raises `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -672,7 +672,7 @@
 (taiga-api-test-throttling (taiga-api-resolve-wiki "project" "wikipage"))
 
 (ert-deftest taiga-api-wiki-resolution-request ()
-  "Check that request parameters for wiki page resolution are setup correctly."
+  "Request parameters for wiki page resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -689,7 +689,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-resolution ()
-  "Check that a successful resolution returns an alist."
+  "A successful resolution returns an alist."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (json-encode '((task . 1336)
@@ -704,7 +704,7 @@
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
 (ert-deftest taiga-api-unsuccessful-resolution ()
-  "Check that an unsuccessful resolution signals an error."
+  "An unsuccessful resolution signals `taiga-api-unresolved'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -718,7 +718,7 @@
   (taiga-api-resolve "project" :milestone "sprint0"))
 
 (ert-deftest taiga-api-resolution-request ()
-  "Check that request parameters for resolution are setup correctly."
+  "Request parameters for resolution are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -737,7 +737,7 @@
 ;;; Search
 
 (ert-deftest taiga-api-search-request ()
-  "Check that request parameters for searches are setup correctly."
+  "Request parameters for searches are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -754,7 +754,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-search ()
-  "Check that a successful search returns an alist."
+  "A successful search returns a `taiga-api-search-result'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (taiga-api-test--read "search-results")
@@ -772,7 +772,7 @@
 ;;; User storage
 
 (ert-deftest taiga-api-list-user-storage-request ()
-  "Check that request parameters for listing user storage are setup correctly."
+  "Request parameters for listing user storage are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -789,7 +789,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-list-user-storage ()
-  "Check that a successful user storage listing returns an array."
+  "A successful user storage listing returns an array of `taiga-api-user-storage'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (taiga-api-test--read "user-storage-data-list")
@@ -807,7 +807,7 @@
 (taiga-api-test-throttling (taiga-api-list-user-storage))
 
 (ert-deftest taiga-api-create-user-storage-request ()
-  "Check that request parameters for listing user storage are setup correctly."
+  "Request parameters for listing user storage are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -827,7 +827,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-create-user-storage-success ()
-  "Check that creating user storage successfully returns the object"
+  "Creating user storage successfully returns the object"
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         201 nil (taiga-api-test--read "user-storage-data")
@@ -844,7 +844,7 @@
 (taiga-api-test-throttling (taiga-api-create-user-storage "foo" "bar"))
 
 (ert-deftest taiga-api-get-user-storage-request ()
-  "Check that request parameters for getting user storage are setup correctly."
+  "Request parameters for getting user storage are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -861,7 +861,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-unsuccessful-get-user-data ()
-  "Check that an unsuccessful user data fetch signals an error."
+  "An unsuccessful user data fetch signals `taiga-api-not-found'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -870,7 +870,7 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-successful-get-user-data ()
-  "Check that a successful user data fetch returns the found object."
+  "A successful user data fetch returns a `taiga-api-user-storage-data'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (taiga-api-test--read "user-storage-data")
@@ -887,7 +887,7 @@
 (taiga-api-test-throttling (taiga-api-get-user-storage "foo"))
 
 (ert-deftest taiga-api-edit-user-storage-request ()
-  "Check that request parameters for editing user storage are setup correctly."
+  "Request parameters for editing user storage are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -907,7 +907,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-unsuccessful-edit-user-data ()
-  "Check that an unsuccessful user data edit signals an error."
+  "An unsuccessful user data edit signals `taiga-api-not-found'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         404 nil (taiga-api--json-encoded-error)
@@ -916,7 +916,7 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-successful-edit-user-data ()
-  "Check that a successful user data edit returns the changed object."
+  "A successful user data edit returns the changed object."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (taiga-api-test--read "user-storage-data")
