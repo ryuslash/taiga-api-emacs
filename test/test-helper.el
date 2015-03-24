@@ -10,6 +10,7 @@
   (defun taiga-api--status-name (code)
     (let ((status (assoc code '((200 . "OK")
                                 (201 . "CREATED")
+                                (204 . "NO CONTENT")
                                 (400 . "BAD REQUEST")
                                 (404 . "NOT FOUND")
                                 (429 . "TOO MANY REQUESTS")))))

@@ -366,6 +366,14 @@ For more information on the PARAMS and RESPONSES arguments see
   (declare (indent 2))
   `(taiga-api-with-non-get-request "PATCH" ,endpoint ,params ,@responses))
 
+(defmacro taiga-api-with-delete-request (endpoint params &rest responses)
+  "Prepare a DELETE request to Taiga using HTTP to ENDPOINT.
+
+Form more information on the PARAMS and RESPONSES arguments see
+`taiga-api-with-non-get-request'."
+  (declare (indent 2))
+  `(taiga-api-with-non-get-request "DELETE" ,endpoint ,params ,@responses))
+
 (defmacro taiga-api-with-get-request (endpoint params &rest responses)
   "Prepare a GET request to Taiga using HTTP to ENDPOINT.
 
@@ -581,6 +589,17 @@ milestone/sprint or wiki page."
         (endpoint (concat "user-storage/" (url-encode-url key))))
     (taiga-api-with-patch-request endpoint (value)
       (200 (taiga-api--get-object #'taiga-api-user-storage-data-from-alist))
+      (404 (signal 'taiga-api-not-found
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
+(defun taiga-api-delete-user-storage (key)
+  "Delete the user storage data stored under KEY."
+  (taiga-api--check-authentication)
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
+        (endpoint (concat "user-storage/" (url-encode-url key))))
+    (taiga-api-with-delete-request endpoint ()
+      (204 t)
       (404 (signal 'taiga-api-not-found
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))
 

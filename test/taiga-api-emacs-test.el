@@ -932,5 +932,40 @@
 (taiga-api-test-unauthenticated (taiga-api-edit-user-storage "foo" "bar"))
 (taiga-api-test-throttling (taiga-api-edit-user-storage "foo" "bar"))
 
+(ert-deftest taiga-api-delete-user-storage-request ()
+  "Request parameters for deleting user storage are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= url-request-method "DELETE"))
+                 (should (string= "https://api.taiga.io/api/v1/user-storage/foo" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 204 NO CONTENT\n"
+                           "\n")
+                   (current-buffer)))))
+      (taiga-api-delete-user-storage "foo"))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-unsuccessful-delete-user-data ()
+  "An unsuccessful user data delete signals `taiga-api-not-found'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-delete-user-storage "foo")
+                    :type 'taiga-api-not-found)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-successful-delete-user-data ()
+  "A successful user data delete returns t."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response 204 nil "\n"
+      (should (taiga-api-delete-user-storage "foo")))))
+
+(taiga-api-test-unauthenticated (taiga-api-delete-user-storage "foo"))
+(taiga-api-test-throttling (taiga-api-delete-user-storage "foo"))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
