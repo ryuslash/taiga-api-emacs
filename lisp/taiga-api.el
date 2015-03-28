@@ -349,6 +349,10 @@
    :videoconferences (cdr (assq 'videoconferences alist))
    :videoconferences-salt (cdr (assq 'videoconferences_salt alist))))
 
+(defun taiga-api-many-project-template-from-array (array)
+  "Turn ARRAY into a list of `taiga-api-project-template'."
+  (mapcar #'taiga-api-project-template-from-alist array))
+
 (defun taiga-api-project-template-options-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-options'."
   (make-taiga-api-project-template-options
@@ -733,6 +737,14 @@ milestone/sprint or wiki page."
       (204 t)
       (404 (signal 'taiga-api-not-found
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
+;;; Project template
+
+(defun taiga-api-list-project-template ()
+  "List all the project templates defined."
+  (taiga-api--check-authentication)
+  (taiga-api-with-get-request "project-templates" ()
+    (200 (taiga-api--get-object #'taiga-api-many-project-template-from-array))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

@@ -327,6 +327,16 @@
     (should (null (taiga-api-project-template-videoconferences result)))
     (should (string= (taiga-api-project-template-videoconferences-salt result) ""))))
 
+(ert-deftest taiga-api-many-project-template-from-array ()
+  "`taiga-api-many-project-template-from-array' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-list"
+                 #'taiga-api-many-project-template-from-array)))
+    (should (listp result))
+    (mapc (lambda (template)
+            (should (taiga-api-project-template-p template)))
+          result)))
+
 (ert-deftest taiga-api-project-template-options-from-alist ()
   "`taiga-api-project-template-options-from-alist' works properly."
   (let ((result (taiga-api-test--data
@@ -961,7 +971,7 @@
     (should (= 1 func-used))))
 
 (ert-deftest taiga-api-successful-list-user-storage ()
-  "A successful user storage listing returns an array of `taiga-api-user-storage'."
+  "A successful user storage listing returns a list of `taiga-api-user-storage'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
         200 nil (taiga-api-test--read "user-storage-data-list")
@@ -1138,6 +1148,38 @@
 
 (taiga-api-test-unauthenticated (taiga-api-delete-user-storage "foo"))
 (taiga-api-test-throttling (taiga-api-delete-user-storage "foo"))
+
+;;; Project template
+
+(ert-deftest taiga-api-list-project-template-request ()
+  "Request parameters for listing project templates are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/project-templates" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "[{\"foo\": \"bar\"}]")
+                   (current-buffer)))))
+      (taiga-api-list-project-template))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-successful-list-project-template ()
+  "A successful project template listing returns a list of `taiga-api-project-template'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (taiga-api-test--read "project-template-list")
+      (let ((result (taiga-api-list-project-template)))
+        (should (listp result))
+        (mapc (lambda (template)
+                (should (taiga-api-project-template-p template))) result)))))
+
+(taiga-api-test-unauthenticated (taiga-api-list-project-template))
+(taiga-api-test-throttling (taiga-api-list-project-template))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
