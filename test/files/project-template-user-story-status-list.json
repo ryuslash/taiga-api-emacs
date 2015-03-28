@@ -1,0 +1,42 @@
+[
+    {
+        "wip_limit": null,
+        "color": "#999999",
+        "name": "New",
+        "slug": "new",
+        "order": 1,
+        "is_closed": false
+    },
+    {
+        "wip_limit": null,
+        "color": "#f57900",
+        "name": "Ready",
+        "slug": "ready",
+        "order": 2,
+        "is_closed": false
+    },
+    {
+        "wip_limit": null,
+        "color": "#729fcf",
+        "name": "In progress",
+        "slug": "in-progress",
+        "order": 3,
+        "is_closed": false
+    },
+    {
+        "wip_limit": null,
+        "color": "#4e9a06",
+        "name": "Ready for test",
+        "slug": "ready-for-test",
+        "order": 4,
+        "is_closed": false
+    },
+    {
+        "wip_limit": null,
+        "color": "#cc0000",
+        "name": "Done",
+        "slug": "done",
+        "order": 5,
+        "is_closed": true
+    }
+]

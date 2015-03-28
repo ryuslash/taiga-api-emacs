@@ -277,6 +277,178 @@
             (should (string= (taiga-api-user-storage-data-modified-date stor) "2014-11-13T16:58:35+0000")))
           result)))
 
+(ert-deftest taiga-api-project-template-from-alist ()
+  "`taiga-api-project-template-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template"
+                 #'taiga-api-project-template-from-alist)))
+    (should (taiga-api-project-template-p result))
+    (should (taiga-api-project-template-options-p
+             (taiga-api-project-template-default-options result)))
+    (let ((statuses (taiga-api-project-template-us-statuses result)))
+      (should (listp statuses))
+      (should (taiga-api-project-template-user-story-status-p (elt statuses 0))))
+    (let ((points (taiga-api-project-template-points result)))
+      (should (listp points))
+      (should (taiga-api-project-template-point-p (elt points 0))))
+    (let ((statuses (taiga-api-project-template-task-statuses result)))
+      (should (listp statuses))
+      (should (taiga-api-project-template-status-p (elt statuses 0))))
+    (let ((statuses (taiga-api-project-template-issue-statuses result)))
+      (should (listp statuses))
+      (should (taiga-api-project-template-status-p (elt statuses 0))))
+    (let ((types (taiga-api-project-template-issue-types result)))
+      (should (listp types))
+      (should (taiga-api-project-template-thingy-p (elt types 0))))
+    (let ((priorities (taiga-api-project-template-priorities result)))
+      (should (listp priorities))
+      (should (taiga-api-project-template-thingy-p (elt priorities 0))))
+    (let ((severities (taiga-api-project-template-severities result)))
+      (should (listp severities))
+      (should (taiga-api-project-template-thingy-p (elt severities 0))))
+    (let ((roles (taiga-api-project-template-roles result)))
+      (should (listp roles))
+      (should (taiga-api-project-template-role-p (elt roles 0))))
+    (should (= (taiga-api-project-template-id result) 2))
+    (should (string= (taiga-api-project-template-name result) "Kanban"))
+    (should (string= (taiga-api-project-template-slug result) "kanban"))
+    (should (string= (taiga-api-project-template-description result)
+                     "Sample description"))
+    (should (string= (taiga-api-project-template-created-date result)
+                     "2014-04-22T14:50:19+0000"))
+    (should (string= (taiga-api-project-template-modified-date result)
+                     "2014-07-25T13:11:42+0000"))
+    (should (string= (taiga-api-project-template-default-owner-role result)
+                     "product-owner"))
+    (should (not (taiga-api-project-template-is-backlog-activated result)))
+    (should (taiga-api-project-template-is-kanban-activated result))
+    (should (not (taiga-api-project-template-is-wiki-activated result)))
+    (should (not (taiga-api-project-template-is-issues-activated result)))
+    (should (null (taiga-api-project-template-videoconferences result)))
+    (should (string= (taiga-api-project-template-videoconferences-salt result) ""))))
+
+(ert-deftest taiga-api-project-template-options-from-alist ()
+  "`taiga-api-project-template-options-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-options"
+                 #'taiga-api-project-template-options-from-alist)))
+    (should (taiga-api-project-template-options-p result))
+    (should (string= (taiga-api-project-template-options-us-status result) "New"))
+    (should (string= (taiga-api-project-template-options-points result) "?"))
+    (should (string= (taiga-api-project-template-options-priority result) "Normal"))
+    (should (string= (taiga-api-project-template-options-severity result) "Normal"))
+    (should (string= (taiga-api-project-template-options-task-status result) "New"))
+    (should (string= (taiga-api-project-template-options-issue-type result) "Bug"))
+    (should (string= (taiga-api-project-template-options-issue-status result) "New"))))
+
+(ert-deftest taiga-api-project-template-user-story-status-from-alist ()
+  "`taiga-api-project-template-user-story-status-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-user-story-status"
+                 #'taiga-api-project-template-user-story-status-from-alist)))
+    (should (taiga-api-project-template-user-story-status-p result))
+    (should (null (taiga-api-project-template-user-story-status-wip-limit result)))
+    (should (string= (taiga-api-project-template-user-story-status-color result) "#999999"))
+    (should (string= (taiga-api-project-template-user-story-status-name result) "New"))
+    (should (string= (taiga-api-project-template-user-story-status-slug result) "new"))
+    (should (= (taiga-api-project-template-user-story-status-order result) 1))
+    (should (not (taiga-api-project-template-user-story-status-is-closed result)))))
+
+(ert-deftest taiga-api-many-project-template-user-story-status-from-array ()
+  "`taiga-api-many-project-template-user-story-status-from-array' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-user-story-status-list"
+                 #'taiga-api-many-project-template-user-story-status-from-array)))
+    (should (listp result))
+    (mapc (lambda (status)
+            (should (taiga-api-project-template-user-story-status-p status)))
+          result)))
+
+(ert-deftest taiga-api-project-template-point-from-alist ()
+  "`taiga-api-project-template-point-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-point"
+                 #'taiga-api-project-template-point-from-alist)))
+    (should (taiga-api-project-template-point-p result))
+    (should (null (taiga-api-project-template-point-value result)))
+    (should (string= (taiga-api-project-template-point-name result) "?"))
+    (should (= (taiga-api-project-template-point-order result) 1))))
+
+(ert-deftest taiga-api-many-project-template-point-from-array ()
+  "`taiga-api-many-project-template-point-from-array' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-point-list"
+                 #'taiga-api-many-project-template-point-from-array)))
+    (should (listp result))
+    (mapc (lambda (point)
+            (should (taiga-api-project-template-point-p point)))
+          result)))
+
+(ert-deftest taiga-api-project-template-status-from-alist ()
+  "`taiga-api-project-template-point-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-status"
+                 #'taiga-api-project-template-status-from-alist)))
+    (should (taiga-api-project-template-status-p result))
+    (should (string= (taiga-api-project-template-status-color result) "#999999"))
+    (should (string= (taiga-api-project-template-status-name result) "New"))
+    (should (string= (taiga-api-project-template-status-slug result) "new"))
+    (should (= (taiga-api-project-template-status-order result) 1))
+    (should (not (taiga-api-project-template-status-is-closed result)))))
+
+(ert-deftest taiga-api-many-project-template-status-from-array ()
+  "`taiga-api-many-project-template-status-from-array' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-status-list"
+                 #'taiga-api-many-project-template-status-from-array)))
+    (should (listp result))
+    (mapc (lambda (status)
+            (should (taiga-api-project-template-status-p status)))
+          result)))
+
+(ert-deftest taiga-api-project-template-thingy-from-alist ()
+  "`taiga-api-project-template-thingy-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-thingy"
+                 #'taiga-api-project-template-thingy-from-alist)))
+    (should (taiga-api-project-template-thingy-p result))
+    (should (string= (taiga-api-project-template-thingy-color result) "#cc0000"))
+    (should (string= (taiga-api-project-template-thingy-name result) "Bug"))
+    (should (= (taiga-api-project-template-thingy-order result) 1))))
+
+(ert-deftest taiga-api-many-project-template-thingy-from-alist ()
+  "`taiga-api-many-project-template-thingy-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-thingy-list"
+                 #'taiga-api-many-project-template-thingy-from-array)))
+    (should (listp result))
+    (mapc (lambda (status)
+            (should (taiga-api-project-template-thingy-p status)))
+          result)))
+
+(ert-deftest taiga-api-project-template-role-from-alist ()
+  "`taiga-api-project-template-role-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-role"
+                 #'taiga-api-project-template-role-from-alist)))
+    (should (taiga-api-project-template-role-p result))
+    (should (arrayp (taiga-api-project-template-role-permissions result)))
+    (should (string= (aref (taiga-api-project-template-role-permissions result) 0) "add_issue"))
+    (should (= (taiga-api-project-template-role-order result) 10))
+    (should (taiga-api-project-template-role-computable result))
+    (should (string= (taiga-api-project-template-role-slug result) "ux"))
+    (should (string= (taiga-api-project-template-role-name result) "UX"))))
+
+(ert-deftest taiga-api-many-project-template-role-from-array ()
+  "`taiga-api-many-project-template-role-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-template-role-list"
+                 #'taiga-api-many-project-template-role-from-array)))
+    (should (listp result))
+    (mapc (lambda (role)
+            (should (taiga-api-project-template-role-p role)))
+          result)))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()

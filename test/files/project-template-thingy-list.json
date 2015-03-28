@@ -1,0 +1,17 @@
+[
+    {
+        "color": "#cc0000",
+        "name": "Bug",
+        "order": 1
+    },
+    {
+        "color": "#729fcf",
+        "name": "Question",
+        "order": 2
+    },
+    {
+        "color": "#4e9a06",
+        "name": "Enhancement",
+        "order": 3
+    }
+]

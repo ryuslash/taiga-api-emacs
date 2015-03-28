@@ -1,0 +1,89 @@
+[
+    {
+        "permissions": [
+            "add_issue", "modify_issue", "delete_issue", "view_issues",
+            "add_milestone", "modify_milestone", "delete_milestone",
+            "view_milestones", "view_project", "add_task", "modify_task",
+            "delete_task", "view_tasks", "add_us", "modify_us",
+            "delete_us", "view_us", "add_wiki_page", "modify_wiki_page",
+            "delete_wiki_page", "view_wiki_pages", "add_wiki_link",
+            "delete_wiki_link", "view_wiki_links"
+        ],
+        "order": 10,
+        "computable": true,
+        "slug": "ux",
+        "name": "UX"
+    },
+    {
+        "permissions": [
+            "add_issue", "modify_issue", "delete_issue", "view_issues",
+            "add_milestone", "modify_milestone", "delete_milestone",
+            "view_milestones", "view_project", "add_task", "modify_task",
+            "delete_task", "view_tasks", "add_us", "modify_us",
+            "delete_us", "view_us", "add_wiki_page", "modify_wiki_page",
+            "delete_wiki_page", "view_wiki_pages", "add_wiki_link",
+            "delete_wiki_link", "view_wiki_links"
+        ],
+        "order": 20,
+        "computable": true,
+        "slug": "design",
+        "name": "Design"
+    },
+    {
+        "permissions": [
+            "add_issue", "modify_issue", "delete_issue", "view_issues",
+            "add_milestone", "modify_milestone", "delete_milestone",
+            "view_milestones", "view_project", "add_task", "modify_task",
+            "delete_task", "view_tasks", "add_us", "modify_us",
+            "delete_us", "view_us", "add_wiki_page", "modify_wiki_page",
+            "delete_wiki_page", "view_wiki_pages", "add_wiki_link",
+            "delete_wiki_link", "view_wiki_links"
+        ],
+        "order": 30,
+        "computable": true,
+        "slug": "front",
+        "name": "Front"
+    },
+    {
+        "permissions": [
+            "add_issue", "modify_issue", "delete_issue", "view_issues",
+            "add_milestone", "modify_milestone", "delete_milestone",
+            "view_milestones", "view_project", "add_task", "modify_task",
+            "delete_task", "view_tasks", "add_us", "modify_us",
+            "delete_us", "view_us", "add_wiki_page", "modify_wiki_page",
+            "delete_wiki_page", "view_wiki_pages", "add_wiki_link",
+            "delete_wiki_link", "view_wiki_links"
+        ],
+        "order": 40,
+        "computable": true,
+        "slug": "back",
+        "name": "Back"
+    },
+    {
+        "permissions": [
+            "add_issue", "modify_issue", "delete_issue", "view_issues",
+            "add_milestone", "modify_milestone", "delete_milestone",
+            "view_milestones", "view_project", "add_task", "modify_task",
+            "delete_task", "view_tasks", "add_us", "modify_us",
+            "delete_us", "view_us", "add_wiki_page", "modify_wiki_page",
+            "delete_wiki_page", "view_wiki_pages", "add_wiki_link",
+            "delete_wiki_link", "view_wiki_links"
+        ],
+        "order": 50,
+        "computable": false,
+        "slug": "product-owner",
+        "name": "Product Owner"
+    },
+    {
+        "permissions": [
+            "add_issue", "modify_issue", "delete_issue", "view_issues",
+            "view_milestones", "view_project", "view_tasks", "view_us",
+            "modify_wiki_page", "view_wiki_pages", "add_wiki_link",
+            "delete_wiki_link", "view_wiki_links"
+        ],
+        "order": 60,
+        "computable": false,
+        "slug": "stakeholder",
+        "name": "Stakeholder"
+    }
+]

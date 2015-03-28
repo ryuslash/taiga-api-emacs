@@ -1,0 +1,37 @@
+[
+    {
+        "color": "#999999",
+        "name": "New",
+        "slug": "new",
+        "order": 1,
+        "is_closed": false
+    },
+    {
+        "color": "#729fcf",
+        "name": "In progress",
+        "slug": "in-progress",
+        "order": 2,
+        "is_closed": false
+    },
+    {
+        "color": "#f57900",
+        "name": "Ready for test",
+        "slug": "ready-for-test",
+        "order": 3,
+        "is_closed": true
+    },
+    {
+        "color": "#4e9a06",
+        "name": "Closed",
+        "slug": "closed",
+        "order": 4,
+        "is_closed": true
+    },
+    {
+        "color": "#cc0000",
+        "name": "Needs Info",
+        "slug": "needs-info",
+        "order": 5,
+        "is_closed": false
+    }
+]

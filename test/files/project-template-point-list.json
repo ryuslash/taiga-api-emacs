@@ -1,0 +1,62 @@
+[
+    {
+        "value": null,
+        "name": "?",
+        "order": 1
+    },
+    {
+        "value": 0.0,
+        "name": "0",
+        "order": 2
+    },
+    {
+        "value": 0.5,
+        "name": "1/2",
+        "order": 3
+    },
+    {
+        "value": 1.0,
+        "name": "1",
+        "order": 4
+    },
+    {
+        "value": 2.0,
+        "name": "2",
+        "order": 5
+    },
+    {
+        "value": 3.0,
+        "name": "3",
+        "order": 6
+    },
+    {
+        "value": 5.0,
+        "name": "5",
+        "order": 7
+    },
+    {
+        "value": 8.0,
+        "name": "8",
+        "order": 8
+    },
+    {
+        "value": 10.0,
+        "name": "10",
+        "order": 9
+    },
+    {
+        "value": 15.0,
+        "name": "15",
+        "order": 10
+    },
+    {
+        "value": 20.0,
+        "name": "20",
+        "order": 11
+    },
+    {
+        "value": 40.0,
+        "name": "40",
+        "order": 12
+    }
+]
