@@ -6,5 +6,4 @@
 (files "lisp/taiga-api.el")
 
 (development
- (depends-on "ert-runner")
- (depends-on "undercover"))
+ (depends-on "ert-runner"))
