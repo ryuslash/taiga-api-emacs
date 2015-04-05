@@ -351,6 +351,21 @@
     (should (string= (taiga-api-project-template-options-issue-type result) "Bug"))
     (should (string= (taiga-api-project-template-options-issue-status result) "New"))))
 
+(ert-deftest taiga-api-project-template-options-to-alist ()
+  "`taiga-api-project-template-options-to-alist' works properly."
+  (let ((options (taiga-api-project-template-options-to-alist
+                  (make-taiga-api-project-template-options
+                   :us-status "New" :points "?" :priority "Normal"
+                   :severity "Normal" :task-status "New"
+                   :issue-type "Bug" :issue-status "New"))))
+    (should (string= "New" (cdr (assq 'us_status options))))
+    (should (string= "?" (cdr (assq 'points options))))
+    (should (string= "Normal" (cdr (assq 'priority options))))
+    (should (string= "Normal" (cdr (assq 'severity options))))
+    (should (string= "New" (cdr (assq 'task_status options))))
+    (should (string= "Bug" (cdr (assq 'issue_type options))))
+    (should (string= "New" (cdr (assq 'issue_status options))))))
+
 (ert-deftest taiga-api-project-template-user-story-status-from-alist ()
   "`taiga-api-project-template-user-story-status-from-alist' works properly."
   (let ((result (taiga-api-test--data
@@ -374,6 +389,19 @@
             (should (taiga-api-project-template-user-story-status-p status)))
           result)))
 
+(ert-deftest taiga-api-project-template-user-story-status-to-alist ()
+  "`taiga-api-project-template-user-story-status-to-alist' works properly."
+  (let ((status (taiga-api-project-template-user-story-status-to-alist
+                 (make-taiga-api-project-template-user-story-status
+                  :wip-limit 3 :color "#ffffff" :name "Test" :slug "test"
+                  :order 33 :is-closed nil))))
+    (should (= 3 (cdr (assq 'wip_limit status))))
+    (should (string= "#ffffff" (cdr (assq 'color status))))
+    (should (string= "Test" (cdr (assq 'name status))))
+    (should (string= "test" (cdr (assq 'slug status))))
+    (should (= 33 (cdr (assq 'order status))))
+    (should (eql :json-false (cdr (assq 'is_closed status))))))
+
 (ert-deftest taiga-api-project-template-point-from-alist ()
   "`taiga-api-project-template-point-from-alist' works properly."
   (let ((result (taiga-api-test--data
@@ -393,6 +421,15 @@
     (mapc (lambda (point)
             (should (taiga-api-project-template-point-p point)))
           result)))
+
+(ert-deftest taiga-api-project-template-point-to-alist ()
+  "`taiga-api-project-template-point-to-alist' works properly."
+  (let ((point (taiga-api-project-template-point-to-alist
+                (make-taiga-api-project-template-point
+                 :value 5 :name "key" :order 55))))
+    (should (= 5 (cdr (assq 'value point))))
+    (should (string= "key" (cdr (assq 'name point))))
+    (should (= 55 (cdr (assq 'order point))))))
 
 (ert-deftest taiga-api-project-template-status-from-alist ()
   "`taiga-api-project-template-point-from-alist' works properly."
@@ -416,6 +453,18 @@
             (should (taiga-api-project-template-status-p status)))
           result)))
 
+(ert-deftest taiga-api-project-template-status-to-alist ()
+  "`taiga-api-project-template-status-to-alist' works properly."
+  (let ((status (taiga-api-project-template-status-to-alist
+                 (make-taiga-api-project-template-status
+                  :color "#ffffff" :name "Something" :slug "something"
+                  :order 23 :is-closed nil))))
+    (should (string= "#ffffff" (cdr (assq 'color status))))
+    (should (string= "Something" (cdr (assq 'name status))))
+    (should (string= "something" (cdr (assq 'slug status))))
+    (should (= 23 (cdr (assq 'order status))))
+    (should (eql :json-false (cdr (assq 'is_closed status))))))
+
 (ert-deftest taiga-api-project-template-thingy-from-alist ()
   "`taiga-api-project-template-thingy-from-alist' works properly."
   (let ((result (taiga-api-test--data
@@ -436,6 +485,15 @@
             (should (taiga-api-project-template-thingy-p status)))
           result)))
 
+(ert-deftest taiga-api-project-template-thingy-to-alist ()
+  "`taiga-api-project-template-thingy-to-alist' works properly."
+  (let ((thingy (taiga-api-project-template-thingy-to-alist
+                 (make-taiga-api-project-template-thingy
+                  :color "#ffffff" :name "Something" :order 99))))
+    (should (string= "#ffffff" (cdr (assq 'color thingy))))
+    (should (string= "Something" (cdr (assq 'name thingy))))
+    (should (= 99 (cdr (assq 'order thingy))))))
+
 (ert-deftest taiga-api-project-template-role-from-alist ()
   "`taiga-api-project-template-role-from-alist' works properly."
   (let ((result (taiga-api-test--data
@@ -448,6 +506,18 @@
     (should (taiga-api-project-template-role-computable result))
     (should (string= (taiga-api-project-template-role-slug result) "ux"))
     (should (string= (taiga-api-project-template-role-name result) "UX"))))
+
+(ert-deftest taiga-api-project-template-role-to-alist ()
+  "`taiga-api-project-template-role-to-alist' works properly."
+  (let ((role (taiga-api-project-template-role-to-alist
+               (make-taiga-api-project-template-role
+                :permissions ["add_issue" "modify_issue"]
+                :order 1 :computable nil :slug "test" :name "Test"))))
+    (should (string= "add_issue" (aref (cdr (assq 'permissions role)) 0)))
+    (should (= 1 (cdr (assq 'order role))))
+    (should (eql :json-false (cdr (assq 'computable role))))
+    (should (string= "test" (cdr (assq 'slug role))))
+    (should (string= "Test" (cdr (assq 'name role))))))
 
 (ert-deftest taiga-api-many-project-template-role-from-array ()
   "`taiga-api-many-project-template-role-from-alist' works properly."
@@ -989,7 +1059,7 @@
 (taiga-api-test-throttling (taiga-api-list-user-storage))
 
 (ert-deftest taiga-api-create-user-storage-request ()
-  "Request parameters for listing user storage are setup correctly."
+  "Request parameters for creating user storage data are setup correctly."
   (let ((func-used 0)
         (taiga-api--auth-token "sometoken"))
     (cl-letf (((symbol-function 'url-retrieve-synchronously)
@@ -1176,10 +1246,217 @@
       (let ((result (taiga-api-list-project-template)))
         (should (listp result))
         (mapc (lambda (template)
-                (should (taiga-api-project-template-p template))) result)))))
+                (should (taiga-api-project-template-p template)))
+              result)))))
 
 (taiga-api-test-unauthenticated (taiga-api-list-project-template))
 (taiga-api-test-throttling (taiga-api-list-project-template))
+
+(ert-deftest taiga-api-create-project-template-request ()
+  "Request parameters for creating project templates are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/project-templates" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should (string= (json-encode '((roles
+                                                  ((permissions "add_issue" "modify_issue")
+                                                   (order . 20)
+                                                   (computable . t)
+                                                   (slug . "design")
+                                                   (name . "Design")))
+                                                 (severities
+                                                  ((color . "#999999")
+                                                   (name . "Wishlist")
+                                                   (order . 1)))
+                                                 (priorities
+                                                  ((color . "#999999")
+                                                   (name . "Low")
+                                                   (order . 1)))
+                                                 (issue_types
+                                                  ((color . "#cc0000")
+                                                   (name . "Bug")
+                                                   (order . 1)))
+                                                 (issue_statuses
+                                                  ((color . "#999999")
+                                                   (name . "New")
+                                                   (slug . "new")
+                                                   (order . 1)
+                                                   (is_closed . :json-false)))
+                                                 (task_statuses
+                                                  ((color . "#999999")
+                                                   (name . "New")
+                                                   (slug . "new")
+                                                   (order . 1)
+                                                   (is_closed . :json-false)))
+                                                 (points
+                                                  ((value)
+                                                   (name . "?")
+                                                   (order . 1)))
+                                                 (us_statuses
+                                                  ((wip_limit)
+                                                   (color . "#999999")
+                                                   (name . "New")
+                                                   (slug)
+                                                   (order . 1)
+                                                   (is_closed . :json-false)))
+                                                 (default_options
+                                                   (us_status . "New")
+                                                   (points . "?")
+                                                   (priority . "Normal")
+                                                   (severity . "Normal")
+                                                   (task_status . "New")
+                                                   (issue_type . "Bug")
+                                                   (issue_status . "New"))
+                                                 (videoconferences_salt . "")
+                                                 (is_issues_activated . :json-false)
+                                                 (is_wiki_activated . :json-false)
+                                                 (is_kanban_activated . t)
+                                                 (is_backlog_activated . :json-false)
+                                                 (slug . "kanban")
+                                                 (default_owner_role . "product-owner")
+                                                 (description . "Sample description")
+                                                 (name . "Kanban")))
+                                  url-request-data))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 201 CREATED\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-create-project-template
+       "Kanban" "Sample description" "product-owner" "kanban"
+       nil t nil nil nil nil
+       (make-taiga-api-project-template-options
+        :us-status "New" :points "?" :priority "Normal"
+        :severity "Normal" :task-status "New" :issue-type "Bug"
+        :issue-status "New")
+       (list (make-taiga-api-project-template-user-story-status
+              :color "#999999" :name "New" :order 1))
+       (list (make-taiga-api-project-template-point :name "?" :order 1))
+       (list (make-taiga-api-project-template-status
+              :color "#999999" :name "New" :slug "new" :order 1))
+       (list (make-taiga-api-project-template-status
+              :color "#999999" :name "New" :slug "new" :order 1))
+       (list (make-taiga-api-project-template-thingy
+              :color "#cc0000" :name "Bug" :order 1))
+       (list (make-taiga-api-project-template-thingy
+              :color "#999999" :name "Low" :order 1))
+       (list (make-taiga-api-project-template-thingy
+              :color "#999999" :name "Wishlist" :order 1))
+       (list (make-taiga-api-project-template-role
+              :permissions '("add_issue" "modify_issue") :order 20
+              :computable t :slug "design" :name "Design"))))
+    (should (= func-used 1))))
+
+(ert-deftest taiga-api-successful-create-project-template ()
+  "A successful project template creation returns a `taiga-api-project-template'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        201 nil (taiga-api-test--read "project-template")
+      (let ((result (taiga-api-create-project-template
+                     "Kanban" "Sample description" "product-owner" "kanban"
+                     nil t nil nil nil nil
+                     (make-taiga-api-project-template-options
+                      :us-status "New" :points "?" :priority "Normal"
+                      :severity "Normal" :task-status "New" :issue-type "Bug"
+                      :issue-status "New")
+                     (list (make-taiga-api-project-template-user-story-status
+                            :color "#999999" :name "New" :order 1))
+                     (list (make-taiga-api-project-template-point :name "?" :order 1))
+                     (list (make-taiga-api-project-template-status
+                            :color "#999999" :name "New" :slug "new" :order 1))
+                     (list (make-taiga-api-project-template-status
+                            :color "#999999" :name "New" :slug "new" :order 1))
+                     (list (make-taiga-api-project-template-thingy
+                            :color "#cc0000" :name "Bug" :order 1))
+                     (list (make-taiga-api-project-template-thingy
+                            :color "#999999" :name "Low" :order 1))
+                     (list (make-taiga-api-project-template-thingy
+                            :color "#999999" :name "Wishlist" :order 1))
+                     (list (make-taiga-api-project-template-role
+                            :permissions '("add_issue" "modify_issue") :order 20
+                            :computable t :slug "design" :name "Design")))))
+        (should (taiga-api-project-template-p result))))))
+
+(ert-deftest taiga-api-unsuccessful-create-project-template ()
+  "An unsuccessful project creation signals `taiga-api-error'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        400 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-create-project-template
+                     "Kanban" "Sample description" "product-owner" "kanban"
+                     nil t nil nil nil nil
+                     (make-taiga-api-project-template-options
+                      :us-status "New" :points "?" :priority "Normal"
+                      :severity "Normal" :task-status "New" :issue-type "Bug"
+                      :issue-status "New")
+                     (list (make-taiga-api-project-template-user-story-status
+                            :color "#999999" :name "New" :order 1))
+                     (list (make-taiga-api-project-template-point :name "?" :order 1))
+                     (list (make-taiga-api-project-template-status
+                            :color "#999999" :name "New" :slug "new" :order 1))
+                     (list (make-taiga-api-project-template-status
+                            :color "#999999" :name "New" :slug "new" :order 1))
+                     (list (make-taiga-api-project-template-thingy
+                            :color "#cc0000" :name "Bug" :order 1))
+                     (list (make-taiga-api-project-template-thingy
+                            :color "#999999" :name "Low" :order 1))
+                     (list (make-taiga-api-project-template-thingy
+                            :color "#999999" :name "Wishlist" :order 1))
+                     (list (make-taiga-api-project-template-role
+                            :permissions '("add_issue" "modify_issue") :order 20
+                            :computable t :slug "design" :name "Design")))
+                    :type 'taiga-api-error)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(taiga-api-test-unauthenticated (taiga-api-create-project-template
+                                 "Kanban" "Sample description" "product-owner" "kanban"
+                                 nil t nil nil nil nil
+                                 (make-taiga-api-project-template-options
+                                  :us-status "New" :points "?" :priority "Normal"
+                                  :severity "Normal" :task-status "New" :issue-type "Bug"
+                                  :issue-status "New")
+                                 (list (make-taiga-api-project-template-user-story-status
+                                        :color "#999999" :name "New" :order 1))
+                                 (list (make-taiga-api-project-template-point :name "?" :order 1))
+                                 (list (make-taiga-api-project-template-status
+                                        :color "#999999" :name "New" :slug "new" :order 1))
+                                 (list (make-taiga-api-project-template-status
+                                        :color "#999999" :name "New" :slug "new" :order 1))
+                                 (list (make-taiga-api-project-template-thingy
+                                        :color "#cc0000" :name "Bug" :order 1))
+                                 (list (make-taiga-api-project-template-thingy
+                                        :color "#999999" :name "Low" :order 1))
+                                 (list (make-taiga-api-project-template-thingy
+                                        :color "#999999" :name "Wishlist" :order 1))
+                                 (list (make-taiga-api-project-template-role
+                                        :permissions '("add_issue" "modify_issue") :order 20
+                                        :computable t :slug "design" :name "Design"))))
+(taiga-api-test-throttling (taiga-api-create-project-template
+                            "Kanban" "Sample description" "product-owner" "kanban"
+                            nil t nil nil nil nil
+                            (make-taiga-api-project-template-options
+                             :us-status "New" :points "?" :priority "Normal"
+                             :severity "Normal" :task-status "New" :issue-type "Bug"
+                             :issue-status "New")
+                            (list (make-taiga-api-project-template-user-story-status
+                                   :color "#999999" :name "New" :order 1))
+                            (list (make-taiga-api-project-template-point :name "?" :order 1))
+                            (list (make-taiga-api-project-template-status
+                                   :color "#999999" :name "New" :slug "new" :order 1))
+                            (list (make-taiga-api-project-template-status
+                                   :color "#999999" :name "New" :slug "new" :order 1))
+                            (list (make-taiga-api-project-template-thingy
+                                   :color "#cc0000" :name "Bug" :order 1))
+                            (list (make-taiga-api-project-template-thingy
+                                   :color "#999999" :name "Low" :order 1))
+                            (list (make-taiga-api-project-template-thingy
+                                   :color "#999999" :name "Wishlist" :order 1))
+                            (list (make-taiga-api-project-template-role
+                                   :permissions '("add_issue" "modify_issue") :order 20
+                                   :computable t :slug "design" :name "Design"))))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

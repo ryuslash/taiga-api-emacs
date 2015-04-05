@@ -61,7 +61,10 @@
     "You forgot to login")
 
   (define-error 'taiga-api-not-found
-    "Could not find the specified resource"))
+    "Could not find the specified resource")
+
+  (define-error 'taiga-api-error
+    "An error occurred"))
 
 (cl-defstruct taiga-api-error type message)
 
@@ -364,6 +367,16 @@
    :issue-type (cdr (assq 'issue_type alist))
    :issue-status (cdr (assq 'issue_status alist))))
 
+(defun taiga-api-project-template-options-to-alist (options)
+  "Turn OPTIONS into an alist."
+  (list (cons 'us_status (taiga-api-project-template-options-us-status options))
+        (cons 'points (taiga-api-project-template-options-points options))
+        (cons 'priority (taiga-api-project-template-options-priority options))
+        (cons 'severity (taiga-api-project-template-options-severity options))
+        (cons 'task_status (taiga-api-project-template-options-task-status options))
+        (cons 'issue_type (taiga-api-project-template-options-issue-type options))
+        (cons 'issue_status (taiga-api-project-template-options-issue-status options))))
+
 (defun taiga-api-project-template-user-story-status-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-user-story-status'."
   (make-taiga-api-project-template-user-story-status
@@ -378,6 +391,15 @@
   "Turn ARRAY into a list of `taiga-api-project-template-user-story-status'."
   (mapcar #'taiga-api-project-template-user-story-status-from-alist array))
 
+(defun taiga-api-project-template-user-story-status-to-alist (status)
+  "Turn STATUS into an alist."
+  (list (cons 'wip_limit (taiga-api-project-template-user-story-status-wip-limit status))
+        (cons 'color (taiga-api-project-template-user-story-status-color status))
+        (cons 'name (taiga-api-project-template-user-story-status-name status))
+        (cons 'slug (taiga-api-project-template-user-story-status-slug status))
+        (cons 'order (taiga-api-project-template-user-story-status-order status))
+        (cons 'is_closed (or (taiga-api-project-template-user-story-status-is-closed status) :json-false))))
+
 (defun taiga-api-project-template-point-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-point'."
   (make-taiga-api-project-template-point
@@ -388,6 +410,12 @@
 (defun taiga-api-many-project-template-point-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-point'."
   (mapcar #'taiga-api-project-template-point-from-alist array))
+
+(defun taiga-api-project-template-point-to-alist (point)
+  "Turn POINT into an alist."
+  (list (cons 'value (taiga-api-project-template-point-value point))
+        (cons 'name (taiga-api-project-template-point-name point))
+        (cons 'order (taiga-api-project-template-point-order point))))
 
 (defun taiga-api-project-template-status-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-status'."
@@ -402,12 +430,26 @@
   "Turn ARRAY into a list of `taiga-api-project-template-status'."
   (mapcar #'taiga-api-project-template-status-from-alist array))
 
+(defun taiga-api-project-template-status-to-alist (status)
+  "Turn STATUS into an alist."
+  (list (cons 'color (taiga-api-project-template-status-color status))
+        (cons 'name (taiga-api-project-template-status-name status))
+        (cons 'slug (taiga-api-project-template-status-slug status))
+        (cons 'order (taiga-api-project-template-status-order status))
+        (cons 'is_closed (or (taiga-api-project-template-status-is-closed status) :json-false))))
+
 (defun taiga-api-project-template-thingy-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-thingy'."
   (make-taiga-api-project-template-thingy
    :color (cdr (assq 'color alist))
    :name (cdr (assq 'name alist))
    :order (cdr (assq 'order alist))))
+
+(defun taiga-api-project-template-thingy-to-alist (thingy)
+  "Turn THINGY into an alist."
+  (list (cons 'color (taiga-api-project-template-thingy-color thingy))
+        (cons 'name (taiga-api-project-template-thingy-name thingy))
+        (cons 'order (taiga-api-project-template-thingy-order thingy))))
 
 (defun taiga-api-many-project-template-thingy-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-thingy'."
@@ -421,6 +463,14 @@
    :computable (cdr (assq 'computable alist))
    :slug (cdr (assq 'slug alist))
    :name (cdr (assq 'name alist))))
+
+(defun taiga-api-project-template-role-to-alist (role)
+  "Turn ROLE into an alist."
+  (list (cons 'permissions (taiga-api-project-template-role-permissions role))
+        (cons 'order (taiga-api-project-template-role-order role))
+        (cons 'computable (or (taiga-api-project-template-role-computable role) :json-false))
+        (cons 'slug (taiga-api-project-template-role-slug role))
+        (cons 'name (taiga-api-project-template-role-name role))))
 
 (defun taiga-api-many-project-template-role-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-role'."
@@ -745,6 +795,76 @@ milestone/sprint or wiki page."
   (taiga-api--check-authentication)
   (taiga-api-with-get-request "project-templates" ()
     (200 (taiga-api--get-object #'taiga-api-many-project-template-from-array))))
+
+(defun taiga-api-create-project-template
+    (name description default-owner-role &optional slug
+          is-backlog-activated is-kanban-activated is-wiki-activated
+          is-issues-activated videoconferences videoconferences-salt
+          default-options us-statuses points task-statuses issue-statuses
+          issue-types priorities severities roles)
+  "Create a new project template named NAME.
+
+NAME should be a string, it is the name for the new template.
+DESCRIPTION should be a string.  DEFAULT-OWNER-ROLE should be a
+string indicating one of the roles specified later.  SLUG should
+be a string of only URL-safe characters, it is the URL where the
+template can be found.  IS-BACKLOG-ACTIVATED should be a boolean
+value indicating if the backlog should be enabled.
+IS-KANBAN-ACTIVATED should be a boolean value indicating if the
+Kanban board should be enabled.  IS-WIKI-ACTIVATED should be a
+boolean value indicating if the project Wiki should be enabled.
+IS-ISSUES-ACTIVATED should be a boolean value indicating if
+project issues should be enabled.  VIDEOCONFERENCES should be
+either \"talky\" or \"appear-in\" to select which service to use.
+VIDEOCONFERENCES-SALT should be a string which is used to obscure
+the URL of your videoconference rooms from the public.
+DEFAULT-OPTIONS should be a `taiga-api-project-template-options'
+instance.  US-STATUSES should be a list of
+`taiga-api-project-template-user-story-status' instances.  POINTS
+should be a list of `taiga-api-project-template-point' instances.
+TASK-STATUSES and ISSUE-STATUSES should be lists of
+`taiga-api-project-template-status' instances.  ISSUE-TYPES,
+PRIORITIES and SEVERITIES should be lists of
+`taiga-api-project-template-thingy' instances.  ROLES should be a
+list of `taiga-api-project-template-role' instances."
+  (taiga-api--check-authentication)
+
+  (when roles
+    (setq roles (mapcar #'taiga-api-project-template-role-to-alist roles)))
+  (when severities
+    (setq severities (mapcar #'taiga-api-project-template-thingy-to-alist severities)))
+  (when priorities
+    (setq priorities (mapcar #'taiga-api-project-template-thingy-to-alist priorities)))
+  (when issue-types
+    (setq issue-types (mapcar #'taiga-api-project-template-thingy-to-alist issue-types)))
+  (when issue-statuses
+    (setq issue-statuses (mapcar #'taiga-api-project-template-status-to-alist issue-statuses)))
+  (when task-statuses
+    (setq task-statuses (mapcar #'taiga-api-project-template-status-to-alist task-statuses)))
+  (when points
+    (setq points (mapcar #'taiga-api-project-template-point-to-alist points)))
+  (when us-statuses
+    (setq us-statuses (mapcar #'taiga-api-project-template-user-story-status-to-alist us-statuses)))
+  (when default-options
+    (setq default-options (taiga-api-project-template-options-to-alist default-options)))
+
+  (unless is-backlog-activated (setq is-backlog-activated :json-false))
+  (unless is-kanban-activated (setq is-kanban-activated :json-false))
+  (unless is-issues-activated (setq is-issues-activated :json-false))
+  (unless is-wiki-activated (setq is-wiki-activated :json-false))
+  (unless videoconferences-salt (setq videoconferences-salt ""))
+
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token)))))
+    (taiga-api-with-post-request "project-templates"
+        (name description default-owner-role slug is-backlog-activated
+              is-kanban-activated is-wiki-activated is-issues-activated
+              videoconferences videoconferences-salt default-options
+              us-statuses points task-statuses issue-statuses issue-types
+              priorities severities roles)
+      (201 (taiga-api--get-object #'taiga-api-project-template-from-alist))
+      (400 (signal 'taiga-api-error
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
