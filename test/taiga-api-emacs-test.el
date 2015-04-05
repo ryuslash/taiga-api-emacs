@@ -1581,5 +1581,40 @@
 (taiga-api-test-unauthenticated (taiga-api-edit-project-template 1 :description "New description"))
 (taiga-api-test-throttling (taiga-api-edit-project-template 1 :description "New description"))
 
+(ert-deftest taiga-api-delete-project-template-request ()
+  "Request parameters for deleting a project template are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= url-request-method "DELETE"))
+                 (should (string= "https://api.taiga.io/api/v1/project-templates/1" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 204 NO CONTENT\n"
+                           "\n")
+                   (current-buffer)))))
+      (taiga-api-delete-project-template 1))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-unsuccessful-delete-project-template ()
+  "An unsuccessful project template deletion signals `taiga-api-not-found'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-delete-project-template 1)
+                    :type 'taiga-api-not-found)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-successful-delete-project-template ()
+  "A successful project template deletion returns t."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response 204 nil "\n"
+      (should (taiga-api-delete-project-template 1)))))
+
+(taiga-api-test-unauthenticated (taiga-api-delete-project-template 1))
+(taiga-api-test-throttling (taiga-api-delete-project-template 1))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

@@ -959,5 +959,16 @@ list of `taiga-api-project-template-role' instances."
       (404 (signal 'taiga-api-not-found
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))
 
+(defun taiga-api-delete-project-template (id)
+  "Delete a project template by ID."
+  (taiga-api--check-authentication)
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
+        (endpoint (concat "project-templates/" (url-encode-url (number-to-string id)))))
+    (taiga-api-with-delete-request endpoint ()
+      (204 t)
+      (404 (signal 'taiga-api-not-found
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
