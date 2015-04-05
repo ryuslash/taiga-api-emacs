@@ -866,5 +866,17 @@ list of `taiga-api-project-template-role' instances."
       (400 (signal 'taiga-api-error
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))
 
+(defun taiga-api-get-project-template (id)
+  "Get a project template by ID."
+  (taiga-api--check-authentication)
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
+        (endpoint (concat "project-templates/"
+                          (url-encode-url (number-to-string id)))))
+    (taiga-api-with-get-request endpoint ()
+      (200 (taiga-api--get-object #'taiga-api-project-template-from-alist))
+      (404 (signal 'taiga-api-not-found
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
