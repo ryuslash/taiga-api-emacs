@@ -878,5 +878,86 @@ list of `taiga-api-project-template-role' instances."
       (404 (signal 'taiga-api-not-found
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))
 
+(cl-defun taiga-api-edit-project-template
+    (id &key name description default-owner-role slug
+        (is-backlog-activated nil backlog-specified)
+        (is-kanban-activated nil kanban-specified)
+        (is-wiki-activated nil wiki-specified)
+        (is-issues-activated nil issues-specified)
+        videoconferences
+        (videoconferences-salt nil videoconferences-salt-specified)
+        default-options us-statuses points task-statuses issue-statuses
+        issue-types priorities severities roles)
+  "Update a project template by ID.
+
+NAME should be a string, it is the name of the template.
+DESCRIPTION should be a string.  DEFAULT-OWNER-ROLE should be a
+string indicating one of the roles in the template.  SLUG should
+be a string of only URL-safe characters, it is the URL where the
+template can be found.  IS-BACKLOG-ACTIVATED should be a boolean
+value indicating if the backlog should be a boolean value
+indicating if the backlog should be enabled.  IS-KANBAN-ACTIVATED
+should be a boolean value indicating if the Kanban board should
+be enabled.  IS-WIKI-ACTIVATED should be a boolean value
+indicating if the project wiki should be enabled.
+IS-ISSUES-ACTIVATED should be a boolean value indicating if
+project issues should be enabled.  VIDEOCONFERENCES should be
+either \"talky\" or \"appear-in\" to select which service to use.
+VIDEOCONFERENCES-SALT should be a string which is used to obscure
+the URL of your videoconference rooms from the public.
+DEFAULT-OPTIONS should be a `taiga-api-project-template-options'
+instance.  US-STATUSES should be a list of
+`taiga-api-project-template-user-story-status' instances.  POINTS
+should be a list of `taiga-api-project-template-point' instances.
+TASK-STATUSES and ISSUE-STATUSES should should be lists of
+`taiga-api-project-template-status' instances.  ISSUE-TYPES,
+PRIORITIES annd SEVERITIES should be lists of
+`taiga-api-project-template-thingy' instances.  ROLES should be a
+list of `taiga-api-project-template-role' instances."
+  (taiga-api--check-authentication)
+
+  (when roles
+    (setq roles (mapcar #'taiga-api-project-template-role-to-alist roles)))
+  (when severities
+    (setq severities (mapcar #'taiga-api-project-template-thingy-to-alist severities)))
+  (when priorities
+    (setq priorities (mapcar #'taiga-api-project-template-thingy-to-alist priorities)))
+  (when issue-types
+    (setq issue-types (mapcar #'taiga-api-project-template-thingy-to-alist issue-types)))
+  (when issue-statuses
+    (setq issue-statuses (mapcar #'taiga-api-project-template-status-to-alist issue-statuses)))
+  (when task-statuses
+    (setq task-statuses (mapcar #'taiga-api-project-template-status-to-alist task-statuses)))
+  (when points
+    (setq points (mapcar #'taiga-api-project-template-point-to-alist points)))
+  (when us-statuses
+    (setq us-statuses (mapcar #'taiga-api-project-template-user-story-status-to-alist us-statuses)))
+  (when default-options
+    (setq default-options (taiga-api-project-template-options-to-alist default-options)))
+
+  (when (and backlog-specified (not is-backlog-activated))
+    (setq is-backlog-activated :json-false))
+  (when (and kanban-specified (not is-kanban-activated))
+    (setq is-kanban-activated :json-false))
+  (when (and issues-specified (not is-issues-activated))
+    (setq is-issues-activated :json-false))
+  (when (and wiki-specified (not is-wiki-activated))
+    (setq is-wiki-activated :json-false))
+  (when (and videoconferences-salt-specified (not videoconferences-salt))
+    (setq videoconferences-salt ""))
+
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token))))
+        (endpoint (concat "project-templates/" (url-encode-url (number-to-string id)))))
+    (taiga-api-with-patch-request endpoint
+        (name description default-owner-role slug is-backlog-activated
+              is-kanban-activated is-wiki-activated is-issues-activated
+              videoconferences videoconferences-salt default-options
+              us-statuses points task-statuses issue-statuses issue-types
+              priorities severities roles)
+      (200 (taiga-api--get-object #'taiga-api-project-template-from-alist))
+      (404 (signal 'taiga-api-not-found
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

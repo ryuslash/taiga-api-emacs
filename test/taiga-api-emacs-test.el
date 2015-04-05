@@ -1518,5 +1518,68 @@
 (taiga-api-test-unauthenticated (taiga-api-get-project-template 1))
 (taiga-api-test-throttling (taiga-api-get-project-template 1))
 
+(ert-deftest taiga-api-edit-project-template-request ()
+  "Request parameters for editing user storage are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= url-request-method "PATCH"))
+                 (should (string= "https://api.taiga.io/api/v1/project-templates/1" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should (string= (json-encode '(("description" . "New description")))
+                                  url-request-data))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-edit-project-template 1 :description "New description"))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-unsuccessful-edit-project-template ()
+  "An unsuccessful project template edit signals `taiga-api-not-found'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        404 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-edit-project-template 1)
+                    :type 'taiga-api-not-found)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(ert-deftest taiga-api-successful-edit-project-template ()
+  "A successful project template edit returns the changed object."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        200 nil (taiga-api-test--read "project-template")
+      (let ((result (taiga-api-edit-project-template 1 :description "New description")))
+        (should (taiga-api-project-template-p result))
+        (should (taiga-api-project-template-options-p
+                 (taiga-api-project-template-default-options result)))
+        (should (listp (taiga-api-project-template-us-statuses result)))
+        (should (listp (taiga-api-project-template-points result)))
+        (should (listp (taiga-api-project-template-task-statuses result)))
+        (should (listp (taiga-api-project-template-issue-statuses result)))
+        (should (listp (taiga-api-project-template-issue-types result)))
+        (should (listp (taiga-api-project-template-priorities result)))
+        (should (listp (taiga-api-project-template-severities result)))
+        (should (listp (taiga-api-project-template-roles result)))
+        (should (= 2 (taiga-api-project-template-id result)))
+        (should (string= "Kanban" (taiga-api-project-template-name result)))
+        (should (string= "kanban" (taiga-api-project-template-slug result)))
+        (should (string= "Sample description" (taiga-api-project-template-description result)))
+        (should (string= "2014-04-22T14:50:19+0000" (taiga-api-project-template-created-date result)))
+        (should (string= "2014-07-25T13:11:42+0000" (taiga-api-project-template-modified-date result)))
+        (should (string= "product-owner" (taiga-api-project-template-default-owner-role result)))
+        (should (not (taiga-api-project-template-is-backlog-activated result)))
+        (should (taiga-api-project-template-is-kanban-activated result))
+        (should (not (taiga-api-project-template-is-wiki-activated result)))
+        (should (not (taiga-api-project-template-is-issues-activated result)))
+        (should (null (taiga-api-project-template-videoconferences result)))
+        (should (string= "" (taiga-api-project-template-videoconferences-salt result)))))))
+
+(taiga-api-test-unauthenticated (taiga-api-edit-project-template 1 :description "New description"))
+(taiga-api-test-throttling (taiga-api-edit-project-template 1 :description "New description"))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
