@@ -529,6 +529,85 @@
             (should (taiga-api-project-template-role-p role)))
           result)))
 
+(ert-deftest taiga-api-project-list-entry-from-alist ()
+  "`taiga-api-project-list-entry-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-list-entry"
+                 #'taiga-api-project-list-entry-from-alist)))
+    (should (taiga-api-project-list-entry-p result))
+    (should (equal [] (taiga-api-project-list-entry-anon-permissions result)))
+    (should (string= "2014-09-16T15:39:49+0000" (taiga-api-project-list-entry-created-date result)))
+    (should (= 1 (taiga-api-project-list-entry-creation-template result)))
+    (should (= 574 (taiga-api-project-list-entry-default-issue-status result)))
+    (should (= 127 (taiga-api-project-list-entry-default-issue-type result)))
+    (should (= 977 (taiga-api-project-list-entry-default-points result)))
+    (should (= 245 (taiga-api-project-list-entry-default-priority result)))
+    (should (= 408 (taiga-api-project-list-entry-default-severity result)))
+    (should (= 411 (taiga-api-project-list-entry-default-task-status result)))
+    (should (= 352 (taiga-api-project-list-entry-default-us-status result)))
+    (should (string= "Taiga" (taiga-api-project-list-entry-description result)))
+    (should (taiga-api-project-list-entry-i-am-owner result))
+    (should (= 87 (taiga-api-project-list-entry-id result)))
+    (should (not (taiga-api-project-list-entry-is-backlog-activated result)))
+    (should (taiga-api-project-list-entry-is-issues-activated result))
+    (should (taiga-api-project-list-entry-is-kanban-activated result))
+    (should (not (taiga-api-project-list-entry-is-private result)))
+    (should (taiga-api-project-list-entry-is-wiki-activated result))
+    (should (equal [2 120 5 8766 16 121 8971]
+                   (taiga-api-project-list-entry-members result)))
+    (should (string= "2014-10-29T07:35:38+0000" (taiga-api-project-list-entry-modified-date result)))
+    (should (equal ["admin_project_values" "view_tasks" "view_milestones"
+                    "view_project" "delete_us" "modify_project"
+                    "remove_member" "vote_issues" "add_wiki_link"
+                    "add_issue" "add_task" "delete_wiki_page"
+                    "delete_project" "add_us" "view_wiki_pages"
+                    "delete_task" "delete_wiki_link" "view_wiki_links"
+                    "modify_issue" "view_issues" "modify_wiki_link"
+                    "add_wiki_page" "delete_milestone" "modify_us"
+                    "modify_wiki_page" "admin_roles" "delete_issue"
+                    "add_milestone" "modify_task" "add_member"
+                    "modify_milestone" "view_us"]
+                   (taiga-api-project-list-entry-my-permissions result)))
+    (should (string= "AIL" (taiga-api-project-list-entry-name result)))
+    (should (= 2 (taiga-api-project-list-entry-owner result)))
+    (should (equal [] (taiga-api-project-list-entry-public-permissions result)))
+    (should (string= "ail" (taiga-api-project-list-entry-slug result)))
+    (should (null (taiga-api-project-list-entry-stars result)))
+    (should (null (taiga-api-project-list-entry-tags result)))
+    (should (equal '((tags . "#edd400")
+                     (notes . "#888a85")
+                     (health . "#a40000")
+                     (gestor . "#73d216")
+                     (cuidador . "#204a87")
+                     (api . "#ce5c00"))
+                   (taiga-api-project-list-entry-tags-colors result)))
+    (should (= 3 (taiga-api-project-list-entry-total-milestones result)))
+    (should (= 20.0 (taiga-api-project-list-entry-total-story-points result)))
+    (should (taiga-api-user-detail-p (elt (taiga-api-project-list-entry-users result) 0)))
+    (should (string= "appear-in" (taiga-api-project-list-entry-videoconferences result)))
+    (should (null (taiga-api-project-list-entry-videoconferences-salt result)))))
+
+(ert-deftest taiga-api-user-detail-from-alist ()
+  "`taiga-api-user-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "user-detail" #'taiga-api-user-detail-from-alist)))
+    (should (taiga-api-user-detail-p result))
+    (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"
+                     (taiga-api-user-detail-big-photo result)))
+    (should (string= "" (taiga-api-user-detail-bio result)))
+    (should (string= "black" (taiga-api-user-detail-color result)))
+    (should (string= "" (taiga-api-user-detail-lang result)))
+    (should (string= "" (taiga-api-user-detail-timezone result)))
+    (should (string= "beta.testing@taiga.io" (taiga-api-user-detail-email result)))
+    (should (string= "Beta testing" (taiga-api-user-detail-full-name result)))
+    (should (string= "Beta testing" (taiga-api-user-detail-full-name-display result)))
+    (should (null (taiga-api-user-detail-github-id result)))
+    (should (= 1 (taiga-api-user-detail-id result)))
+    (should (taiga-api-user-detail-is-active result))
+    (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"
+                     (taiga-api-user-detail-photo result)))
+    (should (string= "beta.tester" (taiga-api-user-detail-username result)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
