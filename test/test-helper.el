@@ -93,3 +93,8 @@ this to inspect the contents of the buffer."
                 "' signals `taiga-api-unauthenticated' when unauthenticated.")
        (let ((taiga-api--auth-token ""))
          (should-error ,form :type 'taiga-api-unauthenticated)))))
+
+(defun should-have-auth-token (token)
+  "Check that the URL request headers contain the auth token."
+  (should (string= (concat "Bearer " token)
+                   (cdr (assoc "Authorization" url-request-extra-headers)))))

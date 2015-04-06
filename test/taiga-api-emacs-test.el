@@ -867,7 +867,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -884,7 +884,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&us=5" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -901,7 +901,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&issue=5" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -940,7 +940,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&task=5" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -981,7 +981,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&milestone=some-milestone" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1020,7 +1020,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&wikipage=home" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1066,7 +1066,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/resolver?project=some-project&us=5&milestone=some-milestone" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1085,7 +1085,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/search?project=1&text=design" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1120,7 +1120,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/user-storage" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1155,7 +1155,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/user-storage" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (should (string= (json-encode '(("value" . "bar")
                                                  ("key" . "foo")))
                                   url-request-data))
@@ -1192,7 +1192,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/user-storage/foo" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1236,7 +1236,7 @@
                  (cl-incf func-used)
                  (should (string= url-request-method "PATCH"))
                  (should (string= "https://api.taiga.io/api/v1/user-storage/foo" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (should (string= (json-encode '(("value" . "bar")))
                                   url-request-data))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
@@ -1282,7 +1282,7 @@
                  (cl-incf func-used)
                  (should (string= url-request-method "DELETE"))
                  (should (string= "https://api.taiga.io/api/v1/user-storage/foo" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 204 NO CONTENT\n"
                            "\n")
@@ -1318,7 +1318,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/project-templates" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1349,7 +1349,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/project-templates" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (should (string= (json-encode '((roles
                                                   ((permissions "add_issue" "modify_issue")
                                                    (order . 20)
@@ -1555,7 +1555,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/project-templates/1" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
@@ -1616,7 +1616,7 @@
                  (cl-incf func-used)
                  (should (string= url-request-method "PATCH"))
                  (should (string= "https://api.taiga.io/api/v1/project-templates/1" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (should (string= (json-encode '(("description" . "New description")))
                                   url-request-data))
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
@@ -1679,7 +1679,7 @@
                  (cl-incf func-used)
                  (should (string= url-request-method "DELETE"))
                  (should (string= "https://api.taiga.io/api/v1/project-templates/1" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 204 NO CONTENT\n"
                            "\n")
@@ -1713,7 +1713,7 @@
                (lambda (url &rest args)
                  (cl-incf func-used)
                  (should (string= "https://api.taiga.io/api/v1/projects" url))
-                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (should-have-auth-token "sometoken")
                  (with-current-buffer (generate-new-buffer "taiga-api-http-test")
                    (insert "HTTP/1.1 200 OK\n"
                            "\n"
