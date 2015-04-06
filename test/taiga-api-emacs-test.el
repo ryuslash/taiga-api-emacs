@@ -520,7 +520,7 @@
     (should (string= "Test" (cdr (assq 'name role))))))
 
 (ert-deftest taiga-api-many-project-template-role-from-array ()
-  "`taiga-api-many-project-template-role-from-alist' works properly."
+  "`taiga-api-many-project-template-role-from-array' works properly."
   (let ((result (taiga-api-test--data
                  "project-template-role-list"
                  #'taiga-api-many-project-template-role-from-array)))
@@ -586,6 +586,16 @@
     (should (taiga-api-user-detail-p (elt (taiga-api-project-list-entry-users result) 0)))
     (should (string= "appear-in" (taiga-api-project-list-entry-videoconferences result)))
     (should (null (taiga-api-project-list-entry-videoconferences-salt result)))))
+
+(ert-deftest taiga-api-many-project-list-entry-from-array ()
+  "`taiga-api-many-project-list-entry-from-array' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-list"
+                 #'taiga-api-many-project-list-entry-from-array)))
+    (should (listp result))
+    (mapc (lambda (project)
+            (should (taiga-api-project-list-entry-p project)))
+          result)))
 
 (ert-deftest taiga-api-user-detail-from-alist ()
   "`taiga-api-user-detail-from-alist' works properly."
@@ -1694,6 +1704,37 @@
 
 (taiga-api-test-unauthenticated (taiga-api-delete-project-template 1))
 (taiga-api-test-throttling (taiga-api-delete-project-template 1))
+
+(ert-deftest taiga-api-list-project-request ()
+  "Request parameters for listing projects are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/projects" url))
+                 (should (string= "Bearer sometoken" (cdr (assoc "Authorization" url-request-extra-headers))))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 200 OK\n"
+                           "\n"
+                           "[{\"foo\": \"bar\"}]")
+                   (current-buffer)))))
+      (taiga-api-list-project))
+    (should (= 1 func-used))))
+
+(ert-deftest taiga-api-successful-list-project ()
+  "A successful project listing returns alist of `taiga-api-project-list-entry'."
+  (let ((taiga-api--auth-token "sometokenn"))
+    (with-taiga-api-synchronous-response
+        200 nil (taiga-api-test--read "project-list")
+      (let ((result (taiga-api-list-project)))
+        (should (listp result))
+        (mapc (lambda (project)
+                (should (taiga-api-project-list-entry-p project)))
+              result)))))
+
+(taiga-api-test-unauthenticated (taiga-api-list-project))
+(taiga-api-test-throttling (taiga-api-list-project))
 
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here

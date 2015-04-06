@@ -522,6 +522,10 @@
    :videoconferences (cdr (assq 'videoconferences alist))
    :videoconferences-salt (cdr (assq 'videoconferences_salt alist))))
 
+(defun taiga-api-many-project-list-entry-from-array (array)
+  "Turn ARRAY into a list of `taiga-api-project-list-entry'."
+  (mapcar #'taiga-api-project-list-entry-from-alist array))
+
 (cl-defstruct taiga-api-user-detail
   big-photo bio color lang timezone email full-name full-name-display
   github-id id is-active photo username)
@@ -1036,6 +1040,12 @@ list of `taiga-api-project-template-role' instances."
       (204 t)
       (404 (signal 'taiga-api-not-found
                    (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
+(defun taiga-api-list-project ()
+  "List all the accessible projects."
+  (taiga-api--check-authentication)
+  (taiga-api-with-get-request "projects" ()
+    (200 (taiga-api--get-object #'taiga-api-many-project-list-entry-from-array))))
 
 (provide 'taiga-api)
 ;;; taiga-api.el ends here
