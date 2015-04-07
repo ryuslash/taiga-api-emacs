@@ -28,6 +28,7 @@
 (require 'json)
 (require 'url)
 (require 'cl-lib)
+(require 'eieio)
 
 (defgroup taiga-api nil
   "Customization group for Taiga API"
@@ -66,36 +67,56 @@
   (define-error 'taiga-api-error
     "An error occurred"))
 
-(cl-defstruct taiga-api-error type message)
+(defun taiga-api--slot->json (slot &optional prefix)
+  "Turn SLOT into a JSON-understood name, possibly with PREFIX."
+  (intern (concat (when prefix (symbol-name prefix))
+                  (replace-regexp-in-string "-" "_" (symbol-name slot)))))
+
+(defclass taiga-api-error ()
+  ((type :accessor taiga-api-error-type :initarg :type)
+   (message :accessor taiga-api-error-message :initarg :message)))
 
 (defun taiga-api-error-from-alist (alist)
   "Turn ALIST into a `taiga-api-error'."
-  (make-taiga-api-error
-   :type (cdr (assq '_error_type alist))
-   :message (cdr (assq '_error_message alist))))
+  (make-instance 'taiga-api-error :alist alist))
 
-(cl-defstruct taiga-api-user-authentication
-  auth-token bio is-active email github-id color default-language
-  full-name-display default-timezone id full-name photo username
-  big-photo)
+(defun taiga-api--initialize-from-alist (obj alist &optional json-prefix)
+  "Initialize OBJ from ALIST prepending JSON-PREFIX to the get."
+  (if (not alist)
+      (cl-call-next-method)
+    (mapc (lambda (slot)
+            (setf (slot-value obj slot)
+                  (cdr (assq (taiga-api--slot->json slot json-prefix) alist))))
+          (mapcar #'eieio-slot-descriptor-name
+                  (eieio-class-slots (eieio-object-class obj))))))
+
+(cl-defmethod shared-initialize ((obj taiga-api-error) slots)
+  (taiga-api--initialize-from-alist obj (plist-get slots :alist) '_error_))
+
+(defclass taiga-api-object () ())
+
+(cl-defmethod shared-initialize ((obj taiga-api-object) slots)
+  (taiga-api--initialize-from-alist obj (plist-get slots :alist)))
+
+(defclass taiga-api-user-authentication (taiga-api-object)
+  ((auth-token :accessor taiga-api-user-authentication-auth-token :initarg :auth-token)
+   (bio :accessor taiga-api-user-authentication-bio :initarg :bio)
+   (is-active :accessor taiga-api-user-authentication-is-active :initarg :is-active)
+   (email :accessor taiga-api-user-authentication-email :initarg :email)
+   (github-id :accessor taiga-api-user-authentication-github-id :initarg :github-id)
+   (color :accessor taiga-api-user-authentication-color :initarg :color)
+   (default-language :accessor taiga-api-user-authentication-default-language :initarg :default-language)
+   (full-name-display :accessor taiga-api-user-authentication-full-name-display :initarg :full-name-display)
+   (default-timezone :accessor taiga-api-user-authentication-default-timezone :initarg :default-timezone)
+   (id :accessor taiga-api-user-authentication-id :initarg :id)
+   (full-name :accessor taiga-api-user-authentication-full-name :initarg :full-name)
+   (photo :accessor taiga-api-user-authentication-photo :initarg :photo)
+   (username :accessor taiga-api-user-authentication-username :initarg :username)
+   (big-photo :accessor taiga-api-user-authentication-big-photo :initarg :big-photo)))
 
 (defun taiga-api-user-authentication-from-alist (alist)
-  "Turn ALIST into a `taiga-api-user'."
-  (make-taiga-api-user-authentication
-   :auth-token (cdr (assq 'auth_token alist))
-   :bio (cdr (assq 'bio alist))
-   :is-active (cdr (assq 'is_active alist))
-   :email (cdr (assq 'email alist))
-   :github-id (cdr (assq 'github_id alist))
-   :color (cdr (assq 'color alist))
-   :default-language (cdr (assq 'default_language alist))
-   :full-name-display (cdr (assq 'full_name_display alist))
-   :default-timezone (cdr (assq 'default_timezone alist))
-   :id (cdr (assq 'id alist))
-   :full-name (cdr (assq 'full_name alist))
-   :photo (cdr (assq 'photo alist))
-   :username (cdr (assq 'username alist))
-   :big-photo (cdr (assq 'big_photo alist))))
+  "Turn ALIST into a `taiga-api-user-authentication'."
+  (make-instance 'taiga-api-user-authentication :alist alist))
 
 (cl-defstruct taiga-api-wiki-page
   html editions id version project slug content owner last-modified
