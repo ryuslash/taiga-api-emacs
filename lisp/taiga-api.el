@@ -80,22 +80,41 @@
   "Turn ALIST into a `taiga-api-error'."
   (make-instance 'taiga-api-error :alist alist))
 
+(defun taiga-api--plist-delete (plist prop)
+  (let (lst)
+    (while plist
+      (unless (eql prop (car plist))
+        (setq lst (cons (car plist) (cons (cadr plist) lst))))
+      (setq plist (cddr plist)))
+    lst))
+
 (defun taiga-api--initialize-from-alist (obj alist &optional json-prefix)
   "Initialize OBJ from ALIST prepending JSON-PREFIX to the get."
-  (if (not alist)
-      (cl-call-next-method)
+  (if alist
+      (mapc (lambda (slot)
+              (setf (slot-value obj slot)
+                    (cdr (assq (taiga-api--slot->json slot json-prefix) alist))))
+            (mapcar #'eieio-slot-descriptor-name
+                    (eieio-class-slots (eieio-object-class obj))))))
+
+(defun taiga-api--read-bool (slot alist)
+  (not (eql (cdr (assq slot alist)) :json-false)))
+
+(defun taiga-api--set-bools (obj alist props)
+  (when alist
     (mapc (lambda (slot)
             (setf (slot-value obj slot)
-                  (cdr (assq (taiga-api--slot->json slot json-prefix) alist))))
-          (mapcar #'eieio-slot-descriptor-name
-                  (eieio-class-slots (eieio-object-class obj))))))
+                  (taiga-api--read-bool (taiga-api--slot->json slot) alist)))
+          props)))
 
 (cl-defmethod shared-initialize ((obj taiga-api-error) slots)
+  (cl-call-next-method obj (taiga-api--plist-delete slots :alist))
   (taiga-api--initialize-from-alist obj (plist-get slots :alist) '_error_))
 
 (defclass taiga-api-object () ())
 
 (cl-defmethod shared-initialize ((obj taiga-api-object) slots)
+  (cl-call-next-method obj (taiga-api--plist-delete slots :alist))
   (taiga-api--initialize-from-alist obj (plist-get slots :alist)))
 
 (defclass taiga-api-user-authentication (taiga-api-object)
@@ -118,167 +137,184 @@
   "Turn ALIST into a `taiga-api-user-authentication'."
   (make-instance 'taiga-api-user-authentication :alist alist))
 
-(cl-defstruct taiga-api-wiki-page
-  html editions id version project slug content owner last-modified
-  created-date modified-date watchers)
+(defclass taiga-api-wiki-page (taiga-api-object)
+  ((html :accessor taiga-api-wiki-page-html :initarg :html)
+   (editions :accessor taiga-api-wiki-page-editions :initarg :editions)
+   (id :accessor taiga-api-wiki-page-id :initarg :id)
+   (version :accessor taiga-api-wiki-page-version :initarg :version)
+   (project :accessor taiga-api-wiki-page-project :initarg :project)
+   (slug :accessor taiga-api-wiki-page-slug :initarg :slug)
+   (content :accessor taiga-api-wiki-page-content :initarg :content)
+   (owner :accessor taiga-api-wiki-page-owner :initarg :owner)
+   (last-modified :accessor taiga-api-wiki-page-last-modified :initarg :last-modified)
+   (created-date :accessor taiga-api-wiki-page-created-date :initarg :created-date)
+   (modified-date :accessor taiga-api-wiki-page-modified-date :initarg :modified-date)
+   (watchers :accessor taiga-api-wiki-page-watchers :initarg :watchers)))
 
 (defun taiga-api-wiki-page-from-alist (alist)
   "Turn ALIST into a `taiga-api-wiki-page'."
-  (make-taiga-api-wiki-page
-   :html (cdr (assq 'html alist))
-   :editions (cdr (assq 'editions alist))
-   :id (cdr (assq 'id alist))
-   :version (cdr (assq 'version alist))
-   :project (cdr (assq 'project alist))
-   :slug (cdr (assq 'slug alist))
-   :content (cdr (assq 'content alist))
-   :owner (cdr (assq 'owner alist))
-   :last-modified (cdr (assq 'last_modified alist))
-   :created-date (cdr (assq 'created_date alist))
-   :modified-date (cdr (assq 'modified_date alist))
-   :watchers (cdr (assq 'watchers alist))))
+  (make-instance 'taiga-api-wiki-page :alist alist))
 
-(cl-defstruct taiga-api-user-story
-  assigned-to backlog-order blocked-note blocked-note-html
-  client-requirement comment created-date description description-html
-  finish-date generated-from-issue id is-archived is-blocked is-closed
-  kanban-order milestone milestone-name milestone-slug modified-date
-  origin-issue owner points project ref sprint-order status subject tags
-  team-requirement total-points version watchers)
+(defclass taiga-api-user-story (taiga-api-object)
+  ((assigned-to :accessor taiga-api-user-story-assigned-to :initarg :assigned-to)
+   (backlog-order :accessor taiga-api-user-story-backlog-order :initarg :backlog-order)
+   (blocked-note :accessor taiga-api-user-story-blocked-note :initarg :blocked-note)
+   (blocked-note-html :accessor taiga-api-user-story-blocked-note-html :initarg :blocked-note-html)
+   (client-requirement :accessor taiga-api-user-story-client-requirement :initarg :client-requirement)
+   (comment :accessor taiga-api-user-story-comment :initarg :comment)
+   (created-date :accessor taiga-api-user-story-created-date :initarg :created-date)
+   (description :accessor taiga-api-user-story-description :initarg :description)
+   (description-html :accessor taiga-api-user-story-description-html :initarg :description-html)
+   (finish-date :accessor taiga-api-user-story-finish-date :initarg :finish-date)
+   (generated-from-issue :accessor taiga-api-user-story-generated-from-issue :initarg :generated-from-issue)
+   (id :accessor taiga-api-user-story-id :initarg :id)
+   (is-archived :accessor taiga-api-user-story-is-archived :initarg :is-archived)
+   (is-blocked :accessor taiga-api-user-story-is-blocked :initarg :is-blocked)
+   (is-closed :accessor taiga-api-user-story-is-closed :initarg :is-closed)
+   (kanban-order :accessor taiga-api-user-story-kanban-order :initarg :kanban-order)
+   (milestone :accessor taiga-api-user-story-milestone :initarg :milestone)
+   (milestone-name :accessor taiga-api-user-story-milestone-name :initarg :milestone-name)
+   (milestone-slug :accessor taiga-api-user-story-milestone-slug :initarg :milestone-slug)
+   (modified-date :accessor taiga-api-user-story-modified-date :initarg :modified-date)
+   (origin-issue :accessor taiga-api-user-story-origin-issue :initarg :origin-issue)
+   (owner :accessor taiga-api-user-story-owner :initarg :owner)
+   (points :accessor taiga-api-user-story-points :initarg :points)
+   (project :accessor taiga-api-user-story-project :initarg :project)
+   (ref :accessor taiga-api-user-story-ref :initarg :ref)
+   (sprint-order :accessor taiga-api-user-story-sprint-order :initarg :sprint-order)
+   (status :accessor taiga-api-user-story-status :initarg :status)
+   (subject :accessor taiga-api-user-story-subject :initarg :subject)
+   (tags :accessor taiga-api-user-story-tags :initarg :tags)
+   (team-requirement :accessor taiga-api-user-story-team-requirement :initarg :team-requirement)
+   (total-points :accessor taiga-api-user-story-total-points :initarg :total-points)
+   (version :accessor taiga-api-user-story-version :initarg :version)
+   (watchers :accessor taiga-api-user-story-watchers :initarg :watchers)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-user-story) slots)
+  (cl-call-next-method)
+
+  (taiga-api--set-bools
+   obj (plist-get slots :alist)
+   '(client-requirement is-archived is-blocked is-closed team-requirement)))
 
 (defun taiga-api-user-story-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-story'."
-  (make-taiga-api-user-story
-   :assigned-to (cdr (assq 'assigned_to alist))
-   :backlog-order (cdr (assq 'backlog_order alist))
-   :blocked-note (cdr (assq 'blocked_note alist))
-   :blocked-note-html (cdr (assq 'blocked_note_html alist))
-   :client-requirement (not (eql (cdr (assq 'client_requirement alist)) :json-false))
-   :comment (cdr (assq 'comment alist))
-   :created-date (cdr (assq 'created_date alist))
-   :description (cdr (assq 'description alist))
-   :description-html (cdr (assq 'description_html alist))
-   :finish-date (cdr (assq 'finish_date alist))
-   :generated-from-issue (cdr (assq 'generated_from_issue alist))
-   :id (cdr (assq 'id alist))
-   :is-archived (not (eql (cdr (assq 'is_archived alist)) :json-false))
-   :is-blocked (not (eql (cdr (assq 'is_blocked alist)) :json-false))
-   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))
-   :kanban-order (cdr (assq 'kanban_order alist))
-   :milestone (cdr (assq 'milestone alist))
-   :milestone-name (cdr (assq 'milestone_name alist))
-   :milestone-slug (cdr (assq 'milestone_slug alist))
-   :modified-date (cdr (assq 'modified_date alist))
-   :origin-issue (cdr (assq 'origin_issue alist))
-   :owner (cdr (assq 'owner alist))
-   :points (cdr (assq 'points alist))
-   :project (cdr (assq 'project alist))
-   :ref (cdr (assq 'ref alist))
-   :sprint-order (cdr (assq 'sprint_order alist))
-   :status (cdr (assq 'status alist))
-   :subject (cdr (assq 'subject alist))
-   :tags (cdr (assq 'tags alist))
-   :team-requirement (not (eql (cdr (assq 'team_requirement alist)) :json-false))
-   :total-points (cdr (assq 'total_points alist))
-   :version (cdr (assq 'version alist))
-   :watchers (cdr (assq 'watchers alist))))
+  (make-instance 'taiga-api-user-story :alist alist))
 
-(cl-defstruct taiga-api-issue
-  assigned-to blocked-note blocked-note-html comment created-date
-  description description-html finish-date id is-blocked is-closed
-  milestone modified-date finished-date owner project ref status severity
-  priority type subject tags version watchers generated-user-stories
-  votes neighbors)
+(defclass taiga-api-issue (taiga-api-object)
+  ((assigned-to :accessor taiga-api-issue-assigned-to :initarg :assigned-to)
+   (blocked-note :accessor taiga-api-issue-blocked-note :initarg :blocked-note)
+   (blocked-note-html :accessor taiga-api-issue-blocked-note-html :initarg :blocked-note-html)
+   (comment :accessor taiga-api-issue-comment :initarg :comment)
+   (created-date :accessor taiga-api-issue-created-date :initarg :created-date)
+   (description :accessor taiga-api-issue-description :initarg :description)
+   (description-html :accessor taiga-api-issue-description-html :initarg :description-html)
+   (finish-date :accessor taiga-api-issue-finish-date :initarg :finish-date)
+   (id :accessor taiga-api-issue-id :initarg :id)
+   (is-blocked :accessor taiga-api-issue-is-blocked :initarg :is-blocked)
+   (is-closed :accessor taiga-api-issue-is-closed :initarg :is-closed)
+   (milestone :accessor taiga-api-issue-milestone :initarg :milestone)
+   (modified-date :accessor taiga-api-issue-modified-date :initarg :modified-date)
+   (finished-date :accessor taiga-api-issue-finished-date :initarg :finished-date)
+   (owner :accessor taiga-api-issue-owner :initarg :owner)
+   (project :accessor taiga-api-issue-project :initarg :project)
+   (ref :accessor taiga-api-issue-ref :initarg :ref)
+   (status :accessor taiga-api-issue-status :initarg :status)
+   (severity :accessor taiga-api-issue-severity :initarg :severity)
+   (priority :accessor taiga-api-issue-priority :initarg :priority)
+   (type :accessor taiga-api-issue-type :initarg :type)
+   (subject :accessor taiga-api-issue-subject :initarg :subject)
+   (tags :accessor taiga-api-issue-tags :initarg :tags)
+   (version :accessor taiga-api-issue-version :initarg :version)
+   (watchers :accessor taiga-api-issue-watchers :initarg :watchers)
+   (generated-user-stories :accessor taiga-api-issue-generated-user-stories :initarg :generated-user-stories)
+   (votes :accessor taiga-api-issue-votes :initarg :votes)
+   (neighbors :accessor taiga-api-issue-neighbors :initarg :neighbors)))
 
-(cl-defstruct taiga-api-neighbors next previous)
+(cl-defmethod shared-initialize ((obj taiga-api-issue) slots)
+  (cl-call-next-method)
 
-(cl-defstruct taiga-api-neighbor id ref subject)
+  (let ((alist (plist-get slots :alist)))
+    (taiga-api--set-bools obj alist '(is-blocked is-closed))
+    (when alist
+      (setf (slot-value obj 'neighbors)
+            (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))))
+
+(defclass taiga-api-neighbors ()
+  ((next :accessor taiga-api-neighbors-next :initarg :next)
+   (previous :accessor taiga-api-neighbors-previous :initarg :previous)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-neighbors) slots)
+  (cl-call-next-method obj (taiga-api--plist-delete slots :alist))
+
+  (let* ((alist (plist-get slots :alist))
+         (next-alist (cdr (assq 'next alist)))
+         (previous-alist (cdr (assq 'previous alist))))
+    (if alist
+      (setf (slot-value obj 'next)
+            (when next-alist (taiga-api-neighbor-from-alist next-alist)))
+      (setf (slot-value obj 'previous)
+            (when previous-alist (taiga-api-neighbor-from-alist previous-alist))))))
+
+(defclass taiga-api-neighbor (taiga-api-object)
+  ((id :accessor taiga-api-neighbor-id :initarg :id)
+   (ref :accessor taiga-api-neighbor-ref :initarg :ref)
+   (subject :accessor taiga-api-neighbor-subject :initarg :subject)))
 
 (defun taiga-api-issue-from-alist (alist)
   "Turn ALIST into a `taiga-api-issue'."
-  (make-taiga-api-issue
-   :assigned-to (cdr (assq 'assigned_to alist))
-   :blocked-note (cdr (assq 'blocked_note alist))
-   :blocked-note-html (cdr (assq 'blocked_note_html alist))
-   :comment (cdr (assq 'comment alist))
-   :created-date (cdr (assq 'created_date alist))
-   :description (cdr (assq 'description alist))
-   :description-html (cdr (assq 'description_html alist))
-   :finish-date (cdr (assq 'finish_date alist))
-   :id (cdr (assq 'id alist))
-   :is-blocked (not (eql (cdr (assq 'is_blocked alist)) :json-false))
-   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))
-   :milestone (cdr (assq 'milestone alist))
-   :modified-date (cdr (assq 'modified_date alist))
-   :finished-date (cdr (assq 'finished_date alist))
-   :owner (cdr (assq 'owner alist))
-   :project (cdr (assq 'project alist))
-   :ref (cdr (assq 'ref alist))
-   :status (cdr (assq 'status alist))
-   :severity (cdr (assq 'severity alist))
-   :priority (cdr (assq 'priority alist))
-   :type (cdr (assq 'type alist))
-   :subject (cdr (assq 'subject alist))
-   :tags (cdr (assq 'tags alist))
-   :version (cdr (assq 'version alist))
-   :watchers (cdr (assq 'watchers alist))
-   :generated-user-stories (cdr (assq 'generated_user_stories alist))
-   :votes (cdr (assq 'votes alist))
-   :neighbors (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))
+  (make-instance 'taiga-api-issue :alist alist))
 
 (defun taiga-api-neighbors-from-alist (alist)
   "Turn ALIST into a `taiga-api-neighbors'."
-  (let ((next-alist (cdr (assq 'next alist)))
-        (previous-alist (cdr (assq 'previous alist))))
-    (make-taiga-api-neighbors
-     :next (when next-alist (taiga-api-neighbor-from-alist next-alist))
-     :previous (when previous-alist (taiga-api-neighbor-from-alist previous-alist)))))
+  (make-instance 'taiga-api-neighbors :alist alist))
 
 (defun taiga-api-neighbor-from-alist (alist)
   "Turn ALIST into a `taiga-api-neighbor'."
-  (make-taiga-api-neighbor
-   :id (cdr (assq 'id alist))
-   :ref (cdr (assq 'ref alist))
-   :subject (cdr (assq 'subject alist))))
+  (make-instance 'taiga-api-neighbor :alist alist))
 
-(cl-defstruct taiga-api-task
-  assigned-to blocked-note blocked-note-html comment milestone-slug
-  created-date description description-html id is-blocked is-closed
-  milestone modified-date finished-date owner project user-story ref
-  status subject tags us-order taskboard-order version is-iocaine
-  external-reference watchers neighbors)
+(defclass taiga-api-task (taiga-api-object)
+  ((assigned-to :accessor taiga-api-task-assigned-to :initarg :assigned-to)
+   (blocked-note :accessor taiga-api-task-blocked-note :initarg :blocked-note)
+   (blocked-note-html :accessor taiga-api-task-blocked-note-html :initarg :blocked-note-html)
+   (comment :accessor taiga-api-task-comment :initarg :comment)
+   (milestone-slug :accessor taiga-api-task-milestone-slug :initarg :milestone-slug)
+   (created-date :accessor taiga-api-task-created-date :initarg :created-date)
+   (description :accessor taiga-api-task-description :initarg :description)
+   (description-html :accessor taiga-api-task-description-html :initarg :description-html)
+   (id :accessor taiga-api-task-id :initarg :id)
+   (is-blocked :accessor taiga-api-task-is-blocked :initarg :is-blocked)
+   (is-closed :accessor taiga-api-task-is-closed :initarg :is-closed)
+   (milestone :accessor taiga-api-task-milestone :initarg :milestone)
+   (modified-date :accessor taiga-api-task-modified-date :initarg :modified-date)
+   (finished-date :accessor taiga-api-task-finished-date :initarg :finished-date)
+   (owner :accessor taiga-api-task-owner :initarg :owner)
+   (project :accessor taiga-api-task-project :initarg :project)
+   (user-story :accessor taiga-api-task-user-story :initarg :user-story)
+   (ref :accessor taiga-api-task-ref :initarg :ref)
+   (status :accessor taiga-api-task-status :initarg :status)
+   (subject :accessor taiga-api-task-subject :initarg :subject)
+   (tags :accessor taiga-api-task-tags :initarg :tags)
+   (us-order :accessor taiga-api-task-us-order :initarg :us-order)
+   (taskboard-order :accessor taiga-api-task-taskboard-order :initarg :taskboard-order)
+   (version :accessor taiga-api-task-version :initarg :version)
+   (is-iocaine :accessor taiga-api-task-is-iocaine :initarg :is-iocaine)
+   (external-reference :accessor taiga-api-task-external-reference :initarg :external-reference)
+   (watchers :accessor taiga-api-task-watchers :initarg :watchers)
+   (neighbors :accessor taiga-api-task-neighbors :initarg :neighbors)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-task) slots)
+  (cl-call-next-method)
+
+  (let ((alist (plist-get slots :alist)))
+    (when alist
+      (taiga-api--set-bools obj alist '(is-blocked is-closed is-iocaine))
+      (setf (slot-value obj 'neighbors)
+            (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))))
 
 (defun taiga-api-task-from-alist (alist)
   "Turn ALIST into a `taiga-api-task'."
-  (make-taiga-api-task
-   :assigned-to (cdr (assq 'assigned_to alist))
-   :blocked-note (cdr (assq 'blocked_note alist))
-   :blocked-note-html (cdr (assq 'blocked_note_html alist))
-   :comment (cdr (assq 'comment alist))
-   :milestone-slug (cdr (assq 'milestone_slug alist))
-   :created-date (cdr (assq 'created_date alist))
-   :description (cdr (assq 'description alist))
-   :description-html (cdr (assq 'description_html alist))
-   :id (cdr (assq 'id alist))
-   :is-blocked (not (eql (cdr (assq 'is_blocked alist)) :json-false))
-   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))
-   :milestone (cdr (assq 'milestone alist))
-   :modified-date (cdr (assq 'modified_date alist))
-   :finished-date (cdr (assq 'finished_date alist))
-   :owner (cdr (assq 'owner alist))
-   :project (cdr (assq 'project alist))
-   :user-story (cdr (assq 'user_story alist))
-   :ref (cdr (assq 'ref alist))
-   :status (cdr (assq 'status alist))
-   :subject (cdr (assq 'subject alist))
-   :tags (cdr (assq 'tags alist))
-   :us-order (cdr (assq 'us_order alist))
-   :taskboard-order (cdr (assq 'taskboard_order alist))
-   :version (cdr (assq 'version alist))
-   :is-iocaine (not (eql (cdr (assq 'is_iocaine alist)) :json-false))
-   :external-reference (cdr (assq 'external_reference alist))
-   :watchers (cdr (assq 'watchers alist))
-   :neighbors (taiga-api-neighbors-from-alist (cdr (assq 'neighbors alist)))))
+  (make-instance 'taiga-api-task :alist alist))
 
 (cl-defstruct taiga-api-search-result
   wikipages userstories issues tasks count)
