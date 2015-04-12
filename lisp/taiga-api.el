@@ -316,12 +316,16 @@
   "Turn ALIST into a `taiga-api-task'."
   (make-instance 'taiga-api-task :alist alist))
 
-(cl-defstruct taiga-api-search-result
-  wikipages userstories issues tasks count)
+(defclass taiga-api-search-result (taiga-api-object)
+  ((wikipages :accessor taiga-api-search-result-wikipages :initarg :wikipages)
+   (userstories :accessor taiga-api-search-result-userstories :initarg :userstories)
+   (issues :accessor taiga-api-search-result-issues :initarg :issues)
+   (tasks :accessor taiga-api-search-result-tasks :initarg :tasks)
+   (count :accessor taiga-api-search-result-count :initarg :count)))
 
 (defun taiga-api-search-result-from-alist (alist)
   "Turn ALIST into a `taiga-api-search-result'."
-  (make-taiga-api-search-result
+  (make-instance 'taiga-api-search-result
    :wikipages (cl-coerce (mapcar #'taiga-api-wiki-page-from-alist
                                  (cdr (assq 'wikipages alist)))
                          'array)
@@ -336,93 +340,100 @@
                      'array)
    :count (cdr (assq 'count alist))))
 
-(cl-defstruct taiga-api-user-storage-data
-  key value created-date modified-date)
+(defclass taiga-api-user-storage-data (taiga-api-object)
+  ((key :accessor taiga-api-user-storage-data-key :initarg :key)
+   (value :accessor taiga-api-user-storage-data-value :initarg :value)
+   (created-date :accessor taiga-api-user-storage-data-created-date :initarg :created-date)
+   (modified-date :accessor taiga-api-user-storage-data-modified-date :initarg :modified-date)))
 
 (defun taiga-api-user-storage-data-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-storage-data'."
-  (make-taiga-api-user-storage-data
-   :key (cdr (assq 'key alist))
-   :value (cdr (assq 'value alist))
-   :created-date (cdr (assq 'created_date alist))
-   :modified-date (cdr (assq 'modified_date alist))))
+  (make-instance 'taiga-api-user-storage-data :alist alist))
 
 (defun taiga-api-many-user-storage-data-from-array (array)
   "Turn ARRAY into a list of `taiga-api-user-storage-data'."
   (mapcar #'taiga-api-user-storage-data-from-alist array))
 
-(cl-defstruct taiga-api-project-template
-  default-options us-statuses points task-statuses issue-statuses
-  issue-types priorities severities roles id name slug description
-  created-date modified-date default-owner-role is-backlog-activated
-  is-kanban-activated is-wiki-activated is-issues-activated
-  videoconferences videoconferences-salt)
+(defclass taiga-api-project-template (taiga-api-object)
+  ((default-options :accessor taiga-api-project-template-default-options :initarg :default-options)
+   (us-statuses :accessor taiga-api-project-template-us-statuses :initarg :us-statuses)
+   (points :accessor taiga-api-project-template-points :initarg :points)
+   (task-statuses :accessor taiga-api-project-template-task-statuses :initarg :task-statuses)
+   (issue-statuses :accessor taiga-api-project-template-issue-statuses :initarg :issue-statuses)
+   (issue-types :accessor taiga-api-project-template-issue-types :initarg :issue-types)
+   (priorities :accessor taiga-api-project-template-priorities :initarg :priorities)
+   (severities :accessor taiga-api-project-template-severities :initarg :severities)
+   (roles :accessor taiga-api-project-template-roles :initarg :roles)
+   (id :accessor taiga-api-project-template-id :initarg :id)
+   (name :accessor taiga-api-project-template-name :initarg :name)
+   (slug :accessor taiga-api-project-template-slug :initarg :slug)
+   (description :accessor taiga-api-project-template-description :initarg :description)
+   (created-date :accessor taiga-api-project-template-created-date :initarg :created-date)
+   (modified-date :accessor taiga-api-project-template-modified-date :initarg :modified-date)
+   (default-owner-role :accessor taiga-api-project-template-default-owner-role :initarg :default-owner-role)
+   (is-backlog-activated :accessor taiga-api-project-template-is-backlog-activated :initarg :is-backlog-activated)
+   (is-kanban-activated :accessor taiga-api-project-template-is-kanban-activated :initarg :is-kanban-activated)
+   (is-wiki-activated :accessor taiga-api-project-template-is-wiki-activated :initarg :is-wiki-activated)
+   (is-issues-activated :accessor taiga-api-project-template-is-issues-activated :initarg :is-issues-activated)
+   (videoconferences :accessor taiga-api-project-template-videoconferences :initarg :videoconferences)
+   (videoconferences-salt :accessor taiga-api-project-template-videoconferences-salt :initarg :videoconferences-salt)))
 
-(cl-defstruct taiga-api-project-template-options
-  us-status points priority severity task-status issue-type issue-status)
+(cl-defmethod shared-initialize ((obj taiga-api-project-template) slots)
+  (cl-call-next-method)
 
-(cl-defstruct taiga-api-project-template-user-story-status
-  wip-limit color name slug order is-closed)
-
-(cl-defstruct taiga-api-project-template-point value name order)
-
-(cl-defstruct taiga-api-project-template-status
-  color name slug order is-closed)
-
-(cl-defstruct taiga-api-project-template-thingy color name order)
-
-(cl-defstruct taiga-api-project-template-role
-  permissions order computable slug name)
+  (let ((alist (plist-get slots :alist)))
+    (when alist
+      (taiga-api--set-bools
+       obj alist
+       '(is-backlog-activated is-kanban-activated is-wiki-activated is-issues-activated))
+      (setf (slot-value obj 'default-options)
+            (taiga-api-project-template-options-from-alist
+             (cdr (assq 'default_options alist))))
+      (setf (slot-value obj 'us-statuses)
+            (taiga-api-many-project-template-user-story-status-from-array
+             (cdr (assq 'us_statuses alist))))
+      (setf (slot-value obj 'points)
+            (taiga-api-many-project-template-point-from-array
+             (cdr (assq 'points alist))))
+      (setf (slot-value obj 'task-statuses)
+            (taiga-api-many-project-template-status-from-array
+             (cdr (assq 'task_statuses alist))))
+      (setf (slot-value obj 'issue-statuses)
+            (taiga-api-many-project-template-status-from-array
+             (cdr (assq 'issue_statuses alist))))
+      (setf (slot-value obj 'issue-types)
+            (taiga-api-many-project-template-thingy-from-array
+             (cdr (assq 'issue_types alist))))
+      (setf (slot-value obj 'priorities)
+            (taiga-api-many-project-template-thingy-from-array
+             (cdr (assq 'priorities alist))))
+      (setf (slot-value obj 'severities)
+            (taiga-api-many-project-template-thingy-from-array
+             (cdr (assq 'severities alist))))
+      (setf (slot-value obj 'roles)
+            (taiga-api-many-project-template-role-from-array
+             (cdr (assq 'roles alist)))))))
 
 (defun taiga-api-project-template-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template'."
-  (make-taiga-api-project-template
-   :default-options (taiga-api-project-template-options-from-alist
-                     (cdr (assq 'default_options alist)))
-   :us-statuses (taiga-api-many-project-template-user-story-status-from-array
-                 (cdr (assq 'us_statuses alist)))
-   :points (taiga-api-many-project-template-point-from-array
-            (cdr (assq 'points alist)))
-   :task-statuses (taiga-api-many-project-template-status-from-array
-                   (cdr (assq 'task_statuses alist)))
-   :issue-statuses (taiga-api-many-project-template-status-from-array
-                    (cdr (assq 'issue_statuses alist)))
-   :issue-types (taiga-api-many-project-template-thingy-from-array
-                 (cdr (assq 'issue_types alist)))
-   :priorities (taiga-api-many-project-template-thingy-from-array
-                (cdr (assq 'priorities alist)))
-   :severities (taiga-api-many-project-template-thingy-from-array
-                (cdr (assq 'severities alist)))
-   :roles (taiga-api-many-project-template-role-from-array
-           (cdr (assq 'roles alist)))
-   :id (cdr (assq 'id alist))
-   :name (cdr (assq 'name alist))
-   :slug (cdr (assq 'slug alist))
-   :description (cdr (assq 'description alist))
-   :created-date (cdr (assq 'created_date alist))
-   :modified-date (cdr (assq 'modified_date alist))
-   :default-owner-role (cdr (assq 'default_owner_role alist))
-   :is-backlog-activated (not (eql (cdr (assq 'is_backlog_activated alist)) :json-false))
-   :is-kanban-activated (not (eql (cdr (assq 'is_kanban_activated alist)) :json-false))
-   :is-wiki-activated (not (eql (cdr (assq 'is_wiki_activated alist)) :json-false))
-   :is-issues-activated (not (eql (cdr (assq 'is_issues_activated alist)) :json-false))
-   :videoconferences (cdr (assq 'videoconferences alist))
-   :videoconferences-salt (cdr (assq 'videoconferences_salt alist))))
+  (make-instance 'taiga-api-project-template :alist alist))
 
 (defun taiga-api-many-project-template-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template'."
   (mapcar #'taiga-api-project-template-from-alist array))
 
+(defclass taiga-api-project-template-options (taiga-api-object)
+  ((us-status :accessor taiga-api-project-template-options-us-status :initarg :us-status)
+   (points :accessor taiga-api-project-template-options-points :initarg :points)
+   (priority :accessor taiga-api-project-template-options-priority :initarg :priority)
+   (severity :accessor taiga-api-project-template-options-severity :initarg :severity)
+   (task-status :accessor taiga-api-project-template-options-task-status :initarg :task-status)
+   (issue-type :accessor taiga-api-project-template-options-issue-type :initarg :issue-type)
+   (issue-status :accessor taiga-api-project-template-options-issue-status :initarg :issue-status)))
+
 (defun taiga-api-project-template-options-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-options'."
-  (make-taiga-api-project-template-options
-   :us-status (cdr (assq 'us_status alist))
-   :points (cdr (assq 'points alist))
-   :priority (cdr (assq 'priority alist))
-   :severity (cdr (assq 'severity alist))
-   :task-status (cdr (assq 'task_status alist))
-   :issue-type (cdr (assq 'issue_type alist))
-   :issue-status (cdr (assq 'issue_status alist))))
+  (make-instance 'taiga-api-project-template-options :alist alist))
 
 (defun taiga-api-project-template-options-to-alist (options)
   "Turn OPTIONS into an alist."
@@ -434,15 +445,24 @@
         (cons 'issue_type (taiga-api-project-template-options-issue-type options))
         (cons 'issue_status (taiga-api-project-template-options-issue-status options))))
 
+(defclass taiga-api-project-template-user-story-status (taiga-api-object)
+  ((wip-limit :accessor taiga-api-project-template-user-story-status-wip-limit :initarg :wip-limit)
+   (color :accessor taiga-api-project-template-user-story-status-color :initarg :color)
+   (name :accessor taiga-api-project-template-user-story-status-name :initarg :name)
+   (slug :accessor taiga-api-project-template-user-story-status-slug :initarg :slug)
+   (order :accessor taiga-api-project-template-user-story-status-order :initarg :order)
+   (is-closed :accessor taiga-api-project-template-user-story-status-is-closed :initarg :is-closed)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-project-template-user-story-status) slots)
+  (cl-call-next-method)
+
+  (let ((alist (plist-get slots :alist)))
+    (when alist
+      (taiga-api--set-bools obj alist '(is-closed)))))
+
 (defun taiga-api-project-template-user-story-status-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-user-story-status'."
-  (make-taiga-api-project-template-user-story-status
-   :wip-limit (cdr (assq 'wip_limit alist))
-   :color (cdr (assq 'color alist))
-   :name (cdr (assq 'name alist))
-   :slug (cdr (assq 'slug alist))
-   :order (cdr (assq 'order alist))
-   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))))
+  (make-instance 'taiga-api-project-template-user-story-status :alist alist))
 
 (defun taiga-api-many-project-template-user-story-status-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-user-story-status'."
@@ -457,12 +477,14 @@
         (cons 'order (taiga-api-project-template-user-story-status-order status))
         (cons 'is_closed (or (taiga-api-project-template-user-story-status-is-closed status) :json-false))))
 
+(defclass taiga-api-project-template-point (taiga-api-object)
+  ((value :accessor taiga-api-project-template-point-value :initarg :value)
+   (name :accessor taiga-api-project-template-point-name :initarg :name)
+   (order :accessor taiga-api-project-template-point-order :initarg :order)))
+
 (defun taiga-api-project-template-point-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-point'."
-  (make-taiga-api-project-template-point
-   :value (cdr (assq 'value alist))
-   :name (cdr (assq 'name alist))
-   :order (cdr (assq 'order alist))))
+  (make-instance 'taiga-api-project-template-point :alist alist))
 
 (defun taiga-api-many-project-template-point-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-point'."
@@ -474,14 +496,20 @@
         (cons 'name (taiga-api-project-template-point-name point))
         (cons 'order (taiga-api-project-template-point-order point))))
 
+(defclass taiga-api-project-template-status (taiga-api-object)
+  ((color :accessor taiga-api-project-template-status-color :initarg :color)
+   (name :accessor taiga-api-project-template-status-name :initarg :name)
+   (slug :accessor taiga-api-project-template-status-slug :initarg :slug)
+   (order :accessor taiga-api-project-template-status-order :initarg :order)
+   (is-closed :accessor taiga-api-project-template-status-is-closed :initarg :is-closed)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-project-template-status) slots)
+  (cl-call-next-method)
+  (taiga-api--set-bools obj (plist-get slots :alist) '(is-closed)))
+
 (defun taiga-api-project-template-status-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-status'."
-  (make-taiga-api-project-template-status
-   :color (cdr (assq 'color alist))
-   :name (cdr (assq 'name alist))
-   :slug (cdr (assq 'slug alist))
-   :order (cdr (assq 'order alist))
-   :is-closed (not (eql (cdr (assq 'is_closed alist)) :json-false))))
+  (make-instance 'taiga-api-project-template-status :alist alist))
 
 (defun taiga-api-many-project-template-status-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-status'."
@@ -495,12 +523,14 @@
         (cons 'order (taiga-api-project-template-status-order status))
         (cons 'is_closed (or (taiga-api-project-template-status-is-closed status) :json-false))))
 
+(defclass taiga-api-project-template-thingy (taiga-api-object)
+  ((color :accessor taiga-api-project-template-thingy-color :initarg :color)
+   (name :accessor taiga-api-project-template-thingy-name :initarg :name)
+   (order :accessor taiga-api-project-template-thingy-order :initarg :order)))
+
 (defun taiga-api-project-template-thingy-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-thingy'."
-  (make-taiga-api-project-template-thingy
-   :color (cdr (assq 'color alist))
-   :name (cdr (assq 'name alist))
-   :order (cdr (assq 'order alist))))
+  (make-instance 'taiga-api-project-template-thingy :alist alist))
 
 (defun taiga-api-project-template-thingy-to-alist (thingy)
   "Turn THINGY into an alist."
@@ -512,14 +542,16 @@
   "Turn ARRAY into a list of `taiga-api-project-template-thingy'."
   (mapcar #'taiga-api-project-template-thingy-from-alist array))
 
+(defclass taiga-api-project-template-role (taiga-api-object)
+  ((permissions :accessor taiga-api-project-template-role-permissions :initarg :permissions)
+   (order :accessor taiga-api-project-template-role-order :initarg :order)
+   (computable :accessor taiga-api-project-template-role-computable :initarg :computable)
+   (slug :accessor taiga-api-project-template-role-slug :initarg :slug)
+   (name :accessor taiga-api-project-template-role-name :initarg :name)))
+
 (defun taiga-api-project-template-role-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-role'."
-  (make-taiga-api-project-template-role
-   :permissions (cdr (assq 'permissions alist))
-   :order (cdr (assq 'order alist))
-   :computable (cdr (assq 'computable alist))
-   :slug (cdr (assq 'slug alist))
-   :name (cdr (assq 'name alist))))
+  (make-instance 'taiga-api-project-template-role :alist alist))
 
 (defun taiga-api-project-template-role-to-alist (role)
   "Turn ROLE into an alist."
