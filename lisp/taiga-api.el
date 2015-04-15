@@ -565,76 +565,83 @@
   "Turn ARRAY into a list of `taiga-api-project-template-role'."
   (mapcar #'taiga-api-project-template-role-from-alist array))
 
-(cl-defstruct taiga-api-project-list-entry
-  anon-permissions created-date creation-template default-issue-status
-  default-issue-type default-points default-priority default-severity
-  default-task-status default-us-status description i-am-owner id
-  is-backlog-activated is-issues-activated is-kanban-activated is-private
-  is-wiki-activated members modified-date my-permissions name owner
-  public-permissions slug stars tags tags-colors total-milestones
-  total-story-points users videoconferences videoconferences-salt)
+(defclass taiga-api-project-list-entry (taiga-api-object)
+  ((anon-permissions :accessor taiga-api-project-list-entry-anon-permissions :initarg :anon-permissions)
+   (created-date :accessor taiga-api-project-list-entry-created-date :initarg :created-date)
+   (creation-template :accessor taiga-api-project-list-entry-creation-template :initarg :creation-template)
+   (default-issue-status :accessor taiga-api-project-list-entry-default-issue-status :initarg :default-issue-status)
+   (default-issue-type :accessor taiga-api-project-list-entry-default-issue-type :initarg :default-issue-type)
+   (default-points :accessor taiga-api-project-list-entry-default-points :initarg :default-points)
+   (default-priority :accessor taiga-api-project-list-entry-default-priority :initarg :default-priority)
+   (default-severity :accessor taiga-api-project-list-entry-default-severity :initarg :default-severity)
+   (default-task-status :accessor taiga-api-project-list-entry-default-task-status :initarg :default-task-status)
+   (default-us-status :accessor taiga-api-project-list-entry-default-us-status :initarg :default-us-status)
+   (description :accessor taiga-api-project-list-entry-description :initarg :description)
+   (i-am-owner :accessor taiga-api-project-list-entry-i-am-owner :initarg :i-am-owner)
+   (id :accessor taiga-api-project-list-entry-id :initarg :id)
+   (is-backlog-activated :accessor taiga-api-project-list-entry-is-backlog-activated :initarg :is-backlog-activated)
+   (is-issues-activated :accessor taiga-api-project-list-entry-is-issues-activated :initarg :is-issues-activated)
+   (is-kanban-activated :accessor taiga-api-project-list-entry-is-kanban-activated :initarg :is-kanban-activated)
+   (is-private :accessor taiga-api-project-list-entry-is-private :initarg :is-private)
+   (is-wiki-activated :accessor taiga-api-project-list-entry-is-wiki-activated :initarg :is-wiki-activated)
+   (members :accessor taiga-api-project-list-entry-members :initarg :members)
+   (modified-date :accessor taiga-api-project-list-entry-modified-date :initarg :modified-date)
+   (my-permissions :accessor taiga-api-project-list-entry-my-permissions :initarg :my-permissions)
+   (name :accessor taiga-api-project-list-entry-name :initarg :name)
+   (owner :accessor taiga-api-project-list-entry-owner :initarg :owner)
+   (public-permissions :accessor taiga-api-project-list-entry-public-permissions :initarg :public-permissions)
+   (slug :accessor taiga-api-project-list-entry-slug :initarg :slug)
+   (stars :accessor taiga-api-project-list-entry-stars :initarg :stars)
+   (tags :accessor taiga-api-project-list-entry-tags :initarg :tags)
+   (tags-colors :accessor taiga-api-project-list-entry-tags-colors :initarg :tags-colors)
+   (total-milestones :accessor taiga-api-project-list-entry-total-milestones :initarg :total-milestones)
+   (total-story-points :accessor taiga-api-project-list-entry-total-story-points :initarg :total-story-points)
+   (users :accessor taiga-api-project-list-entry-users :initarg :users)
+   (videoconferences :accessor taiga-api-project-list-entry-videoconferences :initarg :videoconferences)
+   (videoconferences-salt :accessor taiga-api-project-list-entry-videoconferences-salt :initarg :videoconferences-salt)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-project-list-entry) slots)
+  (cl-call-next-method)
+  (let ((alist (plist-get slots :alist)))
+    (taiga-api--set-bools
+     obj alist
+     '(i-am-owner is-backlog-activated is-issues-activated
+                  is-kanban-activated is-private is-wiki-activated))
+    (when alist
+      (setf (slot-value obj 'users)
+            (mapcar #'taiga-api-user-detail-from-alist
+                    (cdr (assq 'users alist)))))))
 
 (defun taiga-api-project-list-entry-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-list-entry'."
-  (make-taiga-api-project-list-entry
-   :anon-permissions (cdr (assq 'anon_permissions alist))
-   :created-date (cdr (assq 'created_date alist))
-   :creation-template (cdr (assq 'creation_template alist))
-   :default-issue-status (cdr (assq 'default_issue_status alist))
-   :default-issue-type (cdr (assq 'default_issue_type alist))
-   :default-points (cdr (assq 'default_points alist))
-   :default-priority (cdr (assq 'default_priority alist))
-   :default-severity (cdr (assq 'default_severity alist))
-   :default-task-status (cdr (assq 'default_task_status alist))
-   :default-us-status (cdr (assq 'default_us_status alist))
-   :description (cdr (assq 'description alist))
-   :i-am-owner (not (eql (cdr (assq 'i_am_owner alist)) :json-false))
-   :id (cdr (assq 'id alist))
-   :is-backlog-activated (not (eql (cdr (assq 'is_backlog_activated alist)) :json-false))
-   :is-issues-activated (not (eql (cdr (assq 'is_issues_activated alist)) :json-false))
-   :is-kanban-activated (not (eql (cdr (assq 'is_kanban_activated alist)) :json-false))
-   :is-private (not (eql (cdr (assq 'is_private alist)) :json-false))
-   :is-wiki-activated (not (eql (cdr (assq 'is_wiki_activated alist)) :json-false))
-   :members (cdr (assq 'members alist))
-   :modified-date (cdr (assq 'modified_date alist))
-   :my-permissions (cdr (assq 'my_permissions alist))
-   :name (cdr (assq 'name alist))
-   :owner (cdr (assq 'owner alist))
-   :public-permissions (cdr (assq 'public_permissions alist))
-   :slug (cdr (assq 'slug alist))
-   :stars (cdr (assq 'stars alist))
-   :tags (cdr (assq 'tags alist))
-   :tags-colors (cdr (assq 'tags_colors alist))
-   :total-milestones (cdr (assq 'total_milestones alist))
-   :total-story-points (cdr (assq 'total_story_points alist))
-   :users (mapcar #'taiga-api-user-detail-from-alist (cdr (assq 'users alist)))
-   :videoconferences (cdr (assq 'videoconferences alist))
-   :videoconferences-salt (cdr (assq 'videoconferences_salt alist))))
+  (make-instance 'taiga-api-project-list-entry :alist alist))
 
 (defun taiga-api-many-project-list-entry-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-list-entry'."
   (mapcar #'taiga-api-project-list-entry-from-alist array))
 
-(cl-defstruct taiga-api-user-detail
-  big-photo bio color lang timezone email full-name full-name-display
-  github-id id is-active photo username)
+(defclass taiga-api-user-detail (taiga-api-object)
+  ((big-photo :accessor taiga-api-user-detail-big-photo :initarg :big-photo)
+   (bio :accessor taiga-api-user-detail-bio :initarg :bio)
+   (color :accessor taiga-api-user-detail-color :initarg :color)
+   (lang :accessor taiga-api-user-detail-lang :initarg :lang)
+   (timezone :accessor taiga-api-user-detail-timezone :initarg :timezone)
+   (email :accessor taiga-api-user-detail-email :initarg :email)
+   (full-name :accessor taiga-api-user-detail-full-name :initarg :full-name)
+   (full-name-display :accessor taiga-api-user-detail-full-name-display :initarg :full-name-display)
+   (github-id :accessor taiga-api-user-detail-github-id :initarg :github-id)
+   (id :accessor taiga-api-user-detail-id :initarg :id)
+   (is-active :accessor taiga-api-user-detail-is-active :initarg :is-active)
+   (photo :accessor taiga-api-user-detail-photo :initarg :photo)
+   (username :accessor taiga-api-user-detail-username :initarg :username)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-user-detail) slots)
+  (cl-call-next-method)
+  (taiga-api--set-bools obj (plist-get slots :alist) '(is-active)))
 
 (defun taiga-api-user-detail-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-detail'."
-  (make-taiga-api-user-detail
-   :big-photo (cdr (assq 'big_photo alist))
-   :bio (cdr (assq 'bio alist))
-   :color (cdr (assq 'color alist))
-   :lang (cdr (assq 'lang alist))
-   :timezone (cdr (assq 'timezone alist))
-   :email (cdr (assq 'email alist))
-   :full-name (cdr (assq 'full_name alist))
-   :full-name-display (cdr (assq 'full_name_display alist))
-   :github-id (cdr (assq 'github_id alist))
-   :id (cdr (assq 'id alist))
-   :is-active (not (eql (cdr (assq 'is_active alist)) :json-false))
-   :photo (cdr (assq 'photo alist))
-   :username (cdr (assq 'username alist))))
+  (make-instance 'taiga-api-user-detail :alist alist))
 
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
