@@ -439,9 +439,9 @@
                  "project-template-thingy"
                  #'taiga-api-project-template-thingy-from-alist)))
     (should (taiga-api-project-template-thingy-p result))
-    (should (string= (taiga-api-project-template-thingy-color result) "#cc0000"))
-    (should (string= (taiga-api-project-template-thingy-name result) "Bug"))
-    (should (= (taiga-api-project-template-thingy-order result) 1))))
+    (should (string= (slot-value result 'color) "#cc0000"))
+    (should (string= (slot-value result 'name) "Bug"))
+    (should (= (slot-value result 'order) 1))))
 
 (ert-deftest taiga-api-many-project-template-thingy-from-alist ()
   "`taiga-api-many-project-template-thingy-from-alist' works properly."

@@ -534,9 +534,9 @@
         (cons 'is_closed (or (slot-value status 'is-closed) :json-false))))
 
 (defclass taiga-api-project-template-thingy (taiga-api-object)
-  ((color :accessor taiga-api-project-template-thingy-color :initarg :color)
-   (name :accessor taiga-api-project-template-thingy-name :initarg :name)
-   (order :accessor taiga-api-project-template-thingy-order :initarg :order)))
+  ((color :initarg :color :initform nil)
+   (name :initarg :name :initform nil)
+   (order :initarg :order :initform nil)))
 
 (defun taiga-api-project-template-thingy-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-thingy'."
@@ -544,9 +544,9 @@
 
 (defun taiga-api-project-template-thingy-to-alist (thingy)
   "Turn THINGY into an alist."
-  (list (cons 'color (taiga-api-project-template-thingy-color thingy))
-        (cons 'name (taiga-api-project-template-thingy-name thingy))
-        (cons 'order (taiga-api-project-template-thingy-order thingy))))
+  (list (cons 'color (slot-value thingy 'color))
+        (cons 'name (slot-value thingy 'name))
+        (cons 'order (slot-value thingy 'order))))
 
 (defun taiga-api-many-project-template-thingy-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-thingy'."
