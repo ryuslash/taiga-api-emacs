@@ -405,11 +405,11 @@
                  "project-template-status"
                  #'taiga-api-project-template-status-from-alist)))
     (should (taiga-api-project-template-status-p result))
-    (should (string= (taiga-api-project-template-status-color result) "#999999"))
-    (should (string= (taiga-api-project-template-status-name result) "New"))
-    (should (string= (taiga-api-project-template-status-slug result) "new"))
-    (should (= (taiga-api-project-template-status-order result) 1))
-    (should (not (taiga-api-project-template-status-is-closed result)))))
+    (should (string= (slot-value result 'color) "#999999"))
+    (should (string= (slot-value result 'name) "New"))
+    (should (string= (slot-value result 'slug) "new"))
+    (should (= (slot-value result 'order) 1))
+    (should (not (slot-value result 'is-closed)))))
 
 (ert-deftest taiga-api-many-project-template-status-from-array ()
   "`taiga-api-many-project-template-status-from-array' works properly."

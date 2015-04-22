@@ -507,11 +507,11 @@
         (cons 'order (slot-value point 'order))))
 
 (defclass taiga-api-project-template-status (taiga-api-object)
-  ((color :accessor taiga-api-project-template-status-color :initarg :color)
-   (name :accessor taiga-api-project-template-status-name :initarg :name)
-   (slug :accessor taiga-api-project-template-status-slug :initarg :slug)
-   (order :accessor taiga-api-project-template-status-order :initarg :order)
-   (is-closed :accessor taiga-api-project-template-status-is-closed :initarg :is-closed)))
+  ((color :initarg :color :initform nil)
+   (name :initarg :name :initform nil)
+   (slug :initarg :slug :initform nil)
+   (order :initarg :order :initform nil)
+   (is-closed :initarg :is-closed :initform nil)))
 
 (cl-defmethod shared-initialize ((obj taiga-api-project-template-status) slots)
   (cl-call-next-method)
@@ -527,11 +527,11 @@
 
 (defun taiga-api-project-template-status-to-alist (status)
   "Turn STATUS into an alist."
-  (list (cons 'color (taiga-api-project-template-status-color status))
-        (cons 'name (taiga-api-project-template-status-name status))
-        (cons 'slug (taiga-api-project-template-status-slug status))
-        (cons 'order (taiga-api-project-template-status-order status))
-        (cons 'is_closed (or (taiga-api-project-template-status-is-closed status) :json-false))))
+  (list (cons 'color (slot-value status 'color))
+        (cons 'name (slot-value status 'name))
+        (cons 'slug (slot-value status 'slug))
+        (cons 'order (slot-value status 'order))
+        (cons 'is_closed (or (slot-value status 'is-closed) :json-false))))
 
 (defclass taiga-api-project-template-thingy (taiga-api-object)
   ((color :accessor taiga-api-project-template-thingy-color :initarg :color)
