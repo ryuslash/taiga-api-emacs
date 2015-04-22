@@ -117,7 +117,7 @@
   (cl-call-next-method obj (taiga-api--plist-delete slots :alist))
   (taiga-api--initialize-from-alist obj (plist-get slots :alist)))
 
-(defclass taiga-api-user-authentication (taiga-api-object)
+(defclass taiga-api-user-authentication-detail (taiga-api-object)
   ((auth-token :initarg :auth-token)
    (bio :initarg :bio)
    (is-active :initarg :is-active)
@@ -133,9 +133,9 @@
    (username :initarg :username)
    (big-photo :initarg :big-photo)))
 
-(defun taiga-api-user-authentication-from-alist (alist)
-  "Turn ALIST into a `taiga-api-user-authentication'."
-  (make-instance 'taiga-api-user-authentication :alist alist))
+(defun taiga-api-user-authentication-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-user-authentication-detail'."
+  (make-instance 'taiga-api-user-authentication-detail :alist alist))
 
 (defclass taiga-api-wiki-page (taiga-api-object)
   ((html :accessor taiga-api-wiki-page-html :initarg :html)
@@ -775,7 +775,7 @@ specific HTTP status codes."
       "auth" (("type" . "normal") username password)
     (200
      (let ((user (taiga-api--get-object
-                  #'taiga-api-user-authentication-from-alist)))
+                  #'taiga-api-user-authentication-detail-from-alist)))
        (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-login-failed
@@ -789,7 +789,7 @@ TOKEN can be used to accept an invitation to a project."
       "auth" (("type" . "github") code token)
     (200
      (let ((user (taiga-api--get-object
-                  #'taiga-api-user-authentication-from-alist)))
+                  #'taiga-api-user-authentication-detail-from-alist)))
        (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-login-failed
@@ -806,7 +806,7 @@ email address.  FULL-NAME is your full name."
       (("type" . "public") username password email full-name)
     (201
      (let ((user (taiga-api--get-object
-                  #'taiga-api-user-authentication-from-alist)))
+                  #'taiga-api-user-authentication-detail-from-alist)))
        (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-registration-failed
@@ -828,7 +828,7 @@ and also only required if EXISTING is nil."
        existing token username password email full-name)
     (201
      (let ((user (taiga-api--get-object
-                  #'taiga-api-user-authentication-from-alist)))
+                  #'taiga-api-user-authentication-detail-from-alist)))
        (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-registration-failed

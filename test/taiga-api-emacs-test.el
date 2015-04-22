@@ -44,8 +44,8 @@
   "`taiga-api-user-from-alist' works properly."
   (let ((detail (taiga-api-test--data
                  "user-authentication-detail"
-                 #'taiga-api-user-authentication-from-alist)))
-    (should (taiga-api-user-authentication-p detail))
+                 #'taiga-api-user-authentication-detail-from-alist)))
+    (should (taiga-api-user-authentication-detail-p detail))
     (should (string= (slot-value detail 'auth-token) "eyJ1c2VyX2F1dGhlbnRpY2F0aW9uX2lkIjo3fq:1XmPud:LKXVD9Z0rmHJjiyy0m4YaaHlQS1"))
     (should (string= (slot-value detail 'bio) ""))
     (should (string= (slot-value detail 'is-active) t))
@@ -625,13 +625,13 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-successful-normal-login ()
-  "A successful login returns a `taiga-api-user-authentication'."
+  "A successful login returns a `taiga-api-user-authentication-detail'."
   (let (taiga-api--auth-token)
     (with-taiga-api-synchronous-response
         200 nil (json-encode '(("username" . "foobar")
                                ("auth_token" . "normaltoken")))
       (taiga-api-test--ensure-token "normaltoken"
-        (should (taiga-api-user-authentication-p
+        (should (taiga-api-user-authentication-detail-p
                  (taiga-api-normal-login "foo" "bar")))
         (should-not (buffer-live-p taiga-api-test-buffer))))))
 
@@ -645,12 +645,12 @@
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
 (ert-deftest taiga-api-successful-github-login ()
-  "A successful github login returns a `taiga-api-user-authentication'."
+  "A successful github login returns a `taiga-api-user-authentication-detail'."
   (with-taiga-api-synchronous-response
       200 nil (json-encode '(("username" . "foobar")
                              ("auth_token" . "githubtoken")))
     (taiga-api-test--ensure-token "githubtoken"
-      (should (taiga-api-user-authentication-p
+      (should (taiga-api-user-authentication-detail-p
                (taiga-api-github-login "foo" "token")))
       (should-not (buffer-live-p taiga-api-test-buffer)))))
 
@@ -658,12 +658,12 @@
 (taiga-api-test-throttling (taiga-api-github-login "foo" "token"))
 
 (ert-deftest taiga-api-successful-public-registration ()
-  "A successful public registration returns a `taiga-api-user-authentication'."
+  "A successful public registration returns a `taiga-api-user-authentication-detail'."
   (with-taiga-api-synchronous-response
       201 nil (json-encode '(("username" . "foo")
                              ("auth_token" . "publictoken")))
     (taiga-api-test--ensure-token "publictoken"
-      (should (taiga-api-user-authentication-p
+      (should (taiga-api-user-authentication-detail-p
                (taiga-api-register-public
                 "foo" "bar" "foo@example.com" "Foo Frobnicate")))
       (should-not (buffer-live-p taiga-api-test-buffer)))))
@@ -683,13 +683,13 @@
    "foo" "bar" "foo@example.com" "Foo Frobnicate"))
 
 (ert-deftest taiga-api-successful-private-registration ()
-  "A successful private registration returns a `taiga-api-user-authentication'."
+  "A successful private registration returns a `taiga-api-user-authentication-detail'."
   (let (taiga-api--auth-token)
     (with-taiga-api-synchronous-response
         201 nil (json-encode '(("username" . "foo")
                                ("auth_token" . "privatetoken")))
       (taiga-api-test--ensure-token "privatetoken"
-        (should (taiga-api-user-authentication-p
+        (should (taiga-api-user-authentication-detail-p
                  (taiga-api-register-private
                   t "token" "username" "password")))
         (should-not (buffer-live-p taiga-api-test-buffer))))))
