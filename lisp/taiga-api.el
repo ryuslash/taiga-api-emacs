@@ -327,11 +327,11 @@
   (make-instance 'taiga-api-task :alist alist))
 
 (defclass taiga-api-search-result (taiga-api-object)
-  ((wikipages :accessor taiga-api-search-result-wikipages :initarg :wikipages)
-   (userstories :accessor taiga-api-search-result-userstories :initarg :userstories)
-   (issues :accessor taiga-api-search-result-issues :initarg :issues)
-   (tasks :accessor taiga-api-search-result-tasks :initarg :tasks)
-   (count :accessor taiga-api-search-result-count :initarg :count)))
+  ((wikipages :initarg :wikipages)
+   (userstories :initarg :userstories)
+   (issues :initarg :issues)
+   (tasks :initarg :tasks)
+   (count :initarg :count)))
 
 (defun taiga-api-search-result-from-alist (alist)
   "Turn ALIST into a `taiga-api-search-result'."
