@@ -340,12 +340,12 @@
                  "project-template-user-story-status"
                  #'taiga-api-project-template-user-story-status-from-alist)))
     (should (taiga-api-project-template-user-story-status-p result))
-    (should (null (taiga-api-project-template-user-story-status-wip-limit result)))
-    (should (string= (taiga-api-project-template-user-story-status-color result) "#999999"))
-    (should (string= (taiga-api-project-template-user-story-status-name result) "New"))
-    (should (string= (taiga-api-project-template-user-story-status-slug result) "new"))
-    (should (= (taiga-api-project-template-user-story-status-order result) 1))
-    (should (not (taiga-api-project-template-user-story-status-is-closed result)))))
+    (should (null (slot-value result 'wip-limit)))
+    (should (string= (slot-value result 'color) "#999999"))
+    (should (string= (slot-value result 'name) "New"))
+    (should (string= (slot-value result 'slug) "new"))
+    (should (= (slot-value result 'order) 1))
+    (should (not (slot-value result 'is-closed)))))
 
 (ert-deftest taiga-api-many-project-template-user-story-status-from-array ()
   "`taiga-api-many-project-template-user-story-status-from-array' works properly."
