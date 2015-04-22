@@ -117,21 +117,31 @@
   (cl-call-next-method obj (taiga-api--plist-delete slots :alist))
   (taiga-api--initialize-from-alist obj (plist-get slots :alist)))
 
-(defclass taiga-api-user-authentication-detail (taiga-api-object)
-  ((auth-token :initarg :auth-token)
+(defclass taiga-api-user-detail (taiga-api-object)
+  ((big-photo :initarg :big-photo)
    (bio :initarg :bio)
-   (is-active :initarg :is-active)
-   (email :initarg :email)
-   (github-id :initarg :github-id)
    (color :initarg :color)
    (lang :initarg :lang)
-   (full-name-display :initarg :full-name-display)
    (timezone :initarg :timezone)
-   (id :initarg :id)
+   (email :initarg :email)
    (full-name :initarg :full-name)
+   (full-name-display :initarg :full-name-display)
+   (github-id :initarg :github-id)
+   (id :initarg :id)
+   (is-active :initarg :is-active)
    (photo :initarg :photo)
-   (username :initarg :username)
-   (big-photo :initarg :big-photo)))
+   (username :initarg :username)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-user-detail) slots)
+  (cl-call-next-method)
+  (taiga-api--set-bools obj (plist-get slots :alist) '(is-active)))
+
+(defun taiga-api-user-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-user-detail'."
+  (make-instance 'taiga-api-user-detail :alist alist))
+
+(defclass taiga-api-user-authentication-detail (taiga-api-user-detail)
+  ((auth-token :initarg :auth-token)))
 
 (defun taiga-api-user-authentication-detail-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-authentication-detail'."
@@ -619,29 +629,6 @@
 (defun taiga-api-many-project-list-entry-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-list-entry'."
   (mapcar #'taiga-api-project-list-entry-from-alist array))
-
-(defclass taiga-api-user-detail (taiga-api-object)
-  ((big-photo :initarg :big-photo)
-   (bio :initarg :bio)
-   (color :initarg :color)
-   (lang :initarg :lang)
-   (timezone :initarg :timezone)
-   (email :initarg :email)
-   (full-name :initarg :full-name)
-   (full-name-display :initarg :full-name-display)
-   (github-id :initarg :github-id)
-   (id :initarg :id)
-   (is-active :initarg :is-active)
-   (photo :initarg :photo)
-   (username :initarg :username)))
-
-(cl-defmethod shared-initialize ((obj taiga-api-user-detail) slots)
-  (cl-call-next-method)
-  (taiga-api--set-bools obj (plist-get slots :alist) '(is-active)))
-
-(defun taiga-api-user-detail-from-alist (alist)
-  "Turn ALIST into a `taiga-api-user-detail'."
-  (make-instance 'taiga-api-user-detail :alist alist))
 
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
