@@ -311,13 +311,13 @@
                  "project-template-options"
                  #'taiga-api-project-template-options-from-alist)))
     (should (taiga-api-project-template-options-p result))
-    (should (string= (taiga-api-project-template-options-us-status result) "New"))
-    (should (string= (taiga-api-project-template-options-points result) "?"))
-    (should (string= (taiga-api-project-template-options-priority result) "Normal"))
-    (should (string= (taiga-api-project-template-options-severity result) "Normal"))
-    (should (string= (taiga-api-project-template-options-task-status result) "New"))
-    (should (string= (taiga-api-project-template-options-issue-type result) "Bug"))
-    (should (string= (taiga-api-project-template-options-issue-status result) "New"))))
+    (should (string= (slot-value result 'us-status) "New"))
+    (should (string= (slot-value result 'points) "?"))
+    (should (string= (slot-value result 'priority) "Normal"))
+    (should (string= (slot-value result 'severity) "Normal"))
+    (should (string= (slot-value result 'task-status) "New"))
+    (should (string= (slot-value result 'issue-type) "Bug"))
+    (should (string= (slot-value result 'issue-status) "New"))))
 
 (ert-deftest taiga-api-project-template-options-to-alist ()
   "`taiga-api-project-template-options-to-alist' works properly."

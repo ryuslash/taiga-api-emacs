@@ -433,13 +433,13 @@
   (mapcar #'taiga-api-project-template-from-alist array))
 
 (defclass taiga-api-project-template-options (taiga-api-object)
-  ((us-status :accessor taiga-api-project-template-options-us-status :initarg :us-status)
-   (points :accessor taiga-api-project-template-options-points :initarg :points)
-   (priority :accessor taiga-api-project-template-options-priority :initarg :priority)
-   (severity :accessor taiga-api-project-template-options-severity :initarg :severity)
-   (task-status :accessor taiga-api-project-template-options-task-status :initarg :task-status)
-   (issue-type :accessor taiga-api-project-template-options-issue-type :initarg :issue-type)
-   (issue-status :accessor taiga-api-project-template-options-issue-status :initarg :issue-status)))
+  ((us-status :initarg :us-status)
+   (points :initarg :points)
+   (priority :initarg :priority)
+   (severity :initarg :severity)
+   (task-status :initarg :task-status)
+   (issue-type :initarg :issue-type)
+   (issue-status :initarg :issue-status)))
 
 (defun taiga-api-project-template-options-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-options'."
@@ -447,13 +447,13 @@
 
 (defun taiga-api-project-template-options-to-alist (options)
   "Turn OPTIONS into an alist."
-  (list (cons 'us_status (taiga-api-project-template-options-us-status options))
-        (cons 'points (taiga-api-project-template-options-points options))
-        (cons 'priority (taiga-api-project-template-options-priority options))
-        (cons 'severity (taiga-api-project-template-options-severity options))
-        (cons 'task_status (taiga-api-project-template-options-task-status options))
-        (cons 'issue_type (taiga-api-project-template-options-issue-type options))
-        (cons 'issue_status (taiga-api-project-template-options-issue-status options))))
+  (list (cons 'us_status (slot-value options 'us-status))
+        (cons 'points (slot-value options 'points))
+        (cons 'priority (slot-value options 'priority))
+        (cons 'severity (slot-value options 'severity))
+        (cons 'task_status (slot-value options 'task-status))
+        (cons 'issue_type (slot-value options 'issue-type))
+        (cons 'issue_status (slot-value options 'issue-status))))
 
 (defclass taiga-api-project-template-user-story-status (taiga-api-object)
   ((wip-limit :accessor taiga-api-project-template-user-story-status-wip-limit :initarg :wip-limit)
