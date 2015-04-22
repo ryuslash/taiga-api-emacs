@@ -351,10 +351,10 @@
    :count (cdr (assq 'count alist))))
 
 (defclass taiga-api-user-storage-data (taiga-api-object)
-  ((key :accessor taiga-api-user-storage-data-key :initarg :key)
-   (value :accessor taiga-api-user-storage-data-value :initarg :value)
-   (created-date :accessor taiga-api-user-storage-data-created-date :initarg :created-date)
-   (modified-date :accessor taiga-api-user-storage-data-modified-date :initarg :modified-date)))
+  ((key :initarg :key)
+   (value :initarg :value)
+   (created-date :initarg :created-date)
+   (modified-date :initarg :modified-date)))
 
 (defun taiga-api-user-storage-data-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-storage-data'."
