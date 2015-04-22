@@ -553,11 +553,11 @@
   (mapcar #'taiga-api-project-template-thingy-from-alist array))
 
 (defclass taiga-api-project-template-role (taiga-api-object)
-  ((permissions :accessor taiga-api-project-template-role-permissions :initarg :permissions)
-   (order :accessor taiga-api-project-template-role-order :initarg :order)
-   (computable :accessor taiga-api-project-template-role-computable :initarg :computable)
-   (slug :accessor taiga-api-project-template-role-slug :initarg :slug)
-   (name :accessor taiga-api-project-template-role-name :initarg :name)))
+  ((permissions :initarg :permissions :initarg nil)
+   (order :initarg :order :initarg nil)
+   (computable :initarg :computable :initarg nil)
+   (slug :initarg :slug :initarg nil)
+   (name :initarg :name :initarg nil)))
 
 (defun taiga-api-project-template-role-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-role'."
@@ -565,11 +565,11 @@
 
 (defun taiga-api-project-template-role-to-alist (role)
   "Turn ROLE into an alist."
-  (list (cons 'permissions (taiga-api-project-template-role-permissions role))
-        (cons 'order (taiga-api-project-template-role-order role))
-        (cons 'computable (or (taiga-api-project-template-role-computable role) :json-false))
-        (cons 'slug (taiga-api-project-template-role-slug role))
-        (cons 'name (taiga-api-project-template-role-name role))))
+  (list (cons 'permissions (slot-value role 'permissions))
+        (cons 'order (slot-value role 'order))
+        (cons 'computable (or (slot-value role 'computable) :json-false))
+        (cons 'slug (slot-value role 'slug))
+        (cons 'name (slot-value role 'name))))
 
 (defun taiga-api-many-project-template-role-from-array (array)
   "Turn ARRAY into a list of `taiga-api-project-template-role'."

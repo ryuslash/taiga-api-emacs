@@ -468,12 +468,12 @@
                  "project-template-role"
                  #'taiga-api-project-template-role-from-alist)))
     (should (taiga-api-project-template-role-p result))
-    (should (arrayp (taiga-api-project-template-role-permissions result)))
-    (should (string= (aref (taiga-api-project-template-role-permissions result) 0) "add_issue"))
-    (should (= (taiga-api-project-template-role-order result) 10))
-    (should (taiga-api-project-template-role-computable result))
-    (should (string= (taiga-api-project-template-role-slug result) "ux"))
-    (should (string= (taiga-api-project-template-role-name result) "UX"))))
+    (should (arrayp (slot-value result 'permissions)))
+    (should (string= (aref (slot-value result 'permissions) 0) "add_issue"))
+    (should (= (slot-value result 'order) 10))
+    (should (slot-value result 'computable))
+    (should (string= (slot-value result 'slug) "ux"))
+    (should (string= (slot-value result 'name) "UX"))))
 
 (ert-deftest taiga-api-project-template-role-to-alist ()
   "`taiga-api-project-template-role-to-alist' works properly."
