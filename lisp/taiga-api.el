@@ -267,9 +267,9 @@
             (when previous-alist (taiga-api-neighbor-from-alist previous-alist))))))
 
 (defclass taiga-api-neighbor (taiga-api-object)
-  ((id :accessor taiga-api-neighbor-id :initarg :id)
-   (ref :accessor taiga-api-neighbor-ref :initarg :ref)
-   (subject :accessor taiga-api-neighbor-subject :initarg :subject)))
+  ((id :initarg :id)
+   (ref :initarg :ref)
+   (subject :initarg :subject)))
 
 (defun taiga-api-issue-from-alist (alist)
   "Turn ALIST into a `taiga-api-issue'."

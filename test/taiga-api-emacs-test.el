@@ -168,10 +168,9 @@
   (let ((neighbor (taiga-api-test--data
                    "neighbor" #'taiga-api-neighbor-from-alist)))
     (should (taiga-api-neighbor-p neighbor))
-    (should (= (taiga-api-neighbor-id neighbor) 16))
-    (should (= (taiga-api-neighbor-ref neighbor) 126))
-    (should (string= (taiga-api-neighbor-subject neighbor)
-                     "Support for bulk actions"))))
+    (should (= (slot-value neighbor 'id) 16))
+    (should (= (slot-value neighbor 'ref) 126))
+    (should (string= (slot-value neighbor 'subject) "Support for bulk actions"))))
 
 (ert-deftest taiga-api-task-from-alist ()
   "`taiga-api-task-from-alist' works properly."
