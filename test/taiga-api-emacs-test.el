@@ -599,21 +599,19 @@
   (let ((result (taiga-api-test--data
                  "user-detail" #'taiga-api-user-detail-from-alist)))
     (should (taiga-api-user-detail-p result))
-    (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"
-                     (taiga-api-user-detail-big-photo result)))
-    (should (string= "" (taiga-api-user-detail-bio result)))
-    (should (string= "black" (taiga-api-user-detail-color result)))
-    (should (string= "" (taiga-api-user-detail-lang result)))
-    (should (string= "" (taiga-api-user-detail-timezone result)))
-    (should (string= "beta.testing@taiga.io" (taiga-api-user-detail-email result)))
-    (should (string= "Beta testing" (taiga-api-user-detail-full-name result)))
-    (should (string= "Beta testing" (taiga-api-user-detail-full-name-display result)))
-    (should (null (taiga-api-user-detail-github-id result)))
-    (should (= 1 (taiga-api-user-detail-id result)))
-    (should (taiga-api-user-detail-is-active result))
-    (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"
-                     (taiga-api-user-detail-photo result)))
-    (should (string= "beta.tester" (taiga-api-user-detail-username result)))))
+    (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80" (slot-value result 'big-photo)))
+    (should (string= "" (slot-value result 'bio)))
+    (should (string= "black" (slot-value result 'color)))
+    (should (string= "" (slot-value result 'lang)))
+    (should (string= "" (slot-value result 'timezone)))
+    (should (string= "beta.testing@taiga.io" (slot-value result 'email)))
+    (should (string= "Beta testing" (slot-value result 'full-name)))
+    (should (string= "Beta testing" (slot-value result 'full-name-display)))
+    (should (null (slot-value result 'github-id)))
+    (should (= 1 (slot-value result 'id)))
+    (should (slot-value result 'is-active))
+    (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80" (slot-value result 'photo)))
+    (should (string= "beta.tester" (slot-value result 'username)))))
 
 ;;; Auth
 
