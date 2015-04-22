@@ -118,20 +118,20 @@
   (taiga-api--initialize-from-alist obj (plist-get slots :alist)))
 
 (defclass taiga-api-user-authentication (taiga-api-object)
-  ((auth-token :accessor taiga-api-user-authentication-auth-token :initarg :auth-token)
-   (bio :accessor taiga-api-user-authentication-bio :initarg :bio)
-   (is-active :accessor taiga-api-user-authentication-is-active :initarg :is-active)
-   (email :accessor taiga-api-user-authentication-email :initarg :email)
-   (github-id :accessor taiga-api-user-authentication-github-id :initarg :github-id)
-   (color :accessor taiga-api-user-authentication-color :initarg :color)
-   (lang :accessor taiga-api-user-authentication-lang :initarg :lang)
-   (full-name-display :accessor taiga-api-user-authentication-full-name-display :initarg :full-name-display)
-   (timezone :accessor taiga-api-user-authentication-timezone :initarg :timezone)
-   (id :accessor taiga-api-user-authentication-id :initarg :id)
-   (full-name :accessor taiga-api-user-authentication-full-name :initarg :full-name)
-   (photo :accessor taiga-api-user-authentication-photo :initarg :photo)
-   (username :accessor taiga-api-user-authentication-username :initarg :username)
-   (big-photo :accessor taiga-api-user-authentication-big-photo :initarg :big-photo)))
+  ((auth-token :initarg :auth-token)
+   (bio :initarg :bio)
+   (is-active :initarg :is-active)
+   (email :initarg :email)
+   (github-id :initarg :github-id)
+   (color :initarg :color)
+   (lang :initarg :lang)
+   (full-name-display :initarg :full-name-display)
+   (timezone :initarg :timezone)
+   (id :initarg :id)
+   (full-name :initarg :full-name)
+   (photo :initarg :photo)
+   (username :initarg :username)
+   (big-photo :initarg :big-photo)))
 
 (defun taiga-api-user-authentication-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-authentication'."
@@ -776,8 +776,7 @@ specific HTTP status codes."
     (200
      (let ((user (taiga-api--get-object
                   #'taiga-api-user-authentication-from-alist)))
-       (setq taiga-api--auth-token
-             (taiga-api-user-authentication-auth-token user))
+       (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -791,8 +790,7 @@ TOKEN can be used to accept an invitation to a project."
     (200
      (let ((user (taiga-api--get-object
                   #'taiga-api-user-authentication-from-alist)))
-       (setq taiga-api--auth-token
-             (taiga-api-user-authentication-auth-token user))
+       (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-login-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -809,8 +807,7 @@ email address.  FULL-NAME is your full name."
     (201
      (let ((user (taiga-api--get-object
                   #'taiga-api-user-authentication-from-alist)))
-       (setq taiga-api--auth-token
-             (taiga-api-user-authentication-auth-token user))
+       (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
@@ -832,8 +829,7 @@ and also only required if EXISTING is nil."
     (201
      (let ((user (taiga-api--get-object
                   #'taiga-api-user-authentication-from-alist)))
-       (setq taiga-api--auth-token
-             (taiga-api-user-authentication-auth-token user))
+       (setq taiga-api--auth-token (slot-value user 'auth-token))
        user))
     (400 (signal 'taiga-api-registration-failed
                  (taiga-api--get-object #'taiga-api-error-from-alist)))))
