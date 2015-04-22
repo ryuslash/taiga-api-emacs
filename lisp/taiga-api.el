@@ -488,9 +488,9 @@
         (cons 'is_closed (or (slot-value status 'is-closed) :json-false))))
 
 (defclass taiga-api-project-template-point (taiga-api-object)
-  ((value :accessor taiga-api-project-template-point-value :initarg :value)
-   (name :accessor taiga-api-project-template-point-name :initarg :name)
-   (order :accessor taiga-api-project-template-point-order :initarg :order)))
+  ((value :initarg :value :initform nil)
+   (name :initarg :name :initform nil)
+   (order :initarg :order :initform nil)))
 
 (defun taiga-api-project-template-point-from-alist (alist)
   "Turn ALIST into a `taiga-api-project-template-point'."
@@ -502,9 +502,9 @@
 
 (defun taiga-api-project-template-point-to-alist (point)
   "Turn POINT into an alist."
-  (list (cons 'value (taiga-api-project-template-point-value point))
-        (cons 'name (taiga-api-project-template-point-name point))
-        (cons 'order (taiga-api-project-template-point-order point))))
+  (list (cons 'value (slot-value point 'value))
+        (cons 'name (slot-value point 'name))
+        (cons 'order (slot-value point 'order))))
 
 (defclass taiga-api-project-template-status (taiga-api-object)
   ((color :accessor taiga-api-project-template-status-color :initarg :color)

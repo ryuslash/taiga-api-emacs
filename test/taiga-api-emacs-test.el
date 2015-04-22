@@ -376,9 +376,9 @@
                  "project-template-point"
                  #'taiga-api-project-template-point-from-alist)))
     (should (taiga-api-project-template-point-p result))
-    (should (null (taiga-api-project-template-point-value result)))
-    (should (string= (taiga-api-project-template-point-name result) "?"))
-    (should (= (taiga-api-project-template-point-order result) 1))))
+    (should (null (slot-value result 'value)))
+    (should (string= (slot-value result 'name) "?"))
+    (should (= (slot-value result 'order) 1))))
 
 (ert-deftest taiga-api-many-project-template-point-from-array ()
   "`taiga-api-many-project-template-point-from-array' works properly."
