@@ -668,6 +668,18 @@
     (should (equal 1 (slot-value result 'order)))
     (should (equal 40 (slot-value result 'project)))))
 
+(ert-deftest taiga-api-project-role-from-alist ()
+  "`taiga-api-project-role-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "project-role"
+                 #'taiga-api-project-role-from-alist)))
+    (should (taiga-api-project-role-p result))
+    (should (equal t (slot-value result 'computable)))
+    (should (equal 49 (slot-value result 'id)))
+    (should (equal "UX" (slot-value result 'name)))
+    (should (equal 10 (slot-value result 'order)))
+    (should (equal "ux" (slot-value result 'slug)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()

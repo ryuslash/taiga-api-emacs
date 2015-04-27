@@ -717,6 +717,21 @@
   "Turn ALIST into a `taiga-api-priority-detail'."
   (make-instance 'taiga-api-priority-detail :alist alist))
 
+(defclass taiga-api-project-role (taiga-api-object)
+  ((computable :initarg :computable)
+   (id :initarg :id)
+   (name :initarg :name)
+   (order :initarg :order)
+   (slug :initarg :slug)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-project-role) slots)
+  (cl-call-next-method)
+  (taiga-api--set-bools obj (plist-get slots :alist) '(computable)))
+
+(defun taiga-api-project-role-from-alist (alist)
+  "Turn ALIST into a `taiga-api-project-role'."
+  (make-instance 'taiga-api-project-role :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
