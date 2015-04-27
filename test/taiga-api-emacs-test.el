@@ -656,6 +656,18 @@
     (should (equal 40 (slot-value result 'value)))
     (should (equal 3 (slot-value result 'project)))))
 
+(ert-deftest taiga-api-priority-detail-from-alist ()
+  "`taiga-api-priority-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "priority-detail"
+                 #'taiga-api-priority-detail-from-alist)))
+    (should (taiga-api-priority-detail-p result))
+    (should (equal "#669933" (slot-value result 'color)))
+    (should (equal 143 (slot-value result 'id)))
+    (should (equal "High" (slot-value result 'name)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 40 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()

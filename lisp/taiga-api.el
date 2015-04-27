@@ -706,6 +706,17 @@
   "Turn ALIST into a `taiga-api-point-detail'."
   (make-instance 'taiga-api-point-detail :alist alist))
 
+(defclass taiga-api-priority-detail (taiga-api-object)
+  ((color :initarg :color)
+   (id :initarg :id)
+   (name :initarg :name)
+   (order :initarg :order)
+   (project :initarg :project)))
+
+(defun taiga-api-priority-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-priority-detail'."
+  (make-instance 'taiga-api-priority-detail :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
