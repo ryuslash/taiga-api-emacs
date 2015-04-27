@@ -671,6 +671,18 @@
     (should (equal 1 (slot-value result 'order)))
     (should (equal 40 (slot-value result 'project)))))
 
+(ert-deftest taiga-api-user-story-status-detail-from-alist ()
+  "`taiga-api-user-story-status-detail-from-alist' works properly."
+  (with-read-data (result "user-story-status-detail")
+    (should (taiga-api-user-story-status-detail-p result))
+    (should (equal "#669933" (slot-value result 'color)))
+    (should (equal 143 (slot-value result 'id)))
+    (should (equal nil (slot-value result 'is-closed)))
+    (should (equal "Open" (slot-value result 'name)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 40 (slot-value result 'project)))
+    (should (equal nil (slot-value result 'wip-limit)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
