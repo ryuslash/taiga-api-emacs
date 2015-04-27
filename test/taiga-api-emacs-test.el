@@ -584,6 +584,18 @@
     (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80" (slot-value result 'photo)))
     (should (string= "beta.tester" (slot-value result 'username)))))
 
+(ert-deftest taiga-api-issue-custom-attribute-detail-from-alist ()
+  "`taiga-api-issue-custom-attribute-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "issue-custom-attribute-detail"
+                 #'taiga-api-issue-custom-attribute-detail-from-alist)))
+    (should (taiga-api-issue-custom-attribute-detail-p result))
+    (should (equal 1 (slot-value result 'id)))
+    (should (equal "Duration" (slot-value result 'name)))
+    (should (equal "Duration in minutes" (slot-value result 'description)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 9 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
