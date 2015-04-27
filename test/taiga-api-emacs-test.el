@@ -680,6 +680,18 @@
     (should (equal 10 (slot-value result 'order)))
     (should (equal "ux" (slot-value result 'slug)))))
 
+(ert-deftest taiga-api-severity-detail-from-alist ()
+  "`taiga-api-severity-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "severity-detail"
+                 #'taiga-api-severity-detail-from-alist)))
+    (should (taiga-api-severity-detail-p result))
+    (should (equal "#669933" (slot-value result 'color)))
+    (should (equal 143 (slot-value result 'id)))
+    (should (equal "Important" (slot-value result 'name)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 40 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()

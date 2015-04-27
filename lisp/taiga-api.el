@@ -732,6 +732,17 @@
   "Turn ALIST into a `taiga-api-project-role'."
   (make-instance 'taiga-api-project-role :alist alist))
 
+(defclass taiga-api-severity-detail (taiga-api-object)
+  ((color :initarg :color)
+   (id :initarg :id)
+   (name :initarg :name)
+   (order :initarg :order)
+   (project :initarg :project)))
+
+(defun taiga-api-severity-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-severity-detail'."
+  (make-instance 'taiga-api-severity-detail :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
