@@ -668,6 +668,32 @@
   "Turn ALIST into a `taiga-api-attribute'."
   (make-instance 'taiga-api-issue-type-detail :alist alist))
 
+(defclass taiga-api-membership-detail (taiga-api-object)
+  ((role-name :initarg :role-name)
+   (full-name :initarg :full-name)
+   (user-email :initarg :user-email)
+   (email :initarg :email)
+   (color :initarg :color)
+   (photo :initarg :photo)
+   (project-name :initarg :project-name)
+   (project-slug :initarg :project-slug)
+   (invited-by :initarg :invited-by)
+   (id :initarg :id)
+   (user :initarg :user)
+   (project :initarg :project)
+   (role :initarg :role)
+   (is-owner :initarg :is-owner)
+   (created-at :initarg :created-at)
+   (invitation-extra-text :initarg :invitation-extra-text)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-membership-detail) slots)
+  (cl-call-next-method)
+  (taiga-api--set-bools obj (plist-get slots :alist) '(is-owner)))
+
+(defun taiga-api-membership-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-membership-detail'."
+  (make-instance 'taiga-api-membership-detail :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."

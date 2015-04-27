@@ -621,6 +621,28 @@
     (should (equal 1 (slot-value result 'order)))
     (should (equal 40 (slot-value result 'project)))))
 
+(ert-deftest taiga-api-membership-detail-from-alist ()
+  "`taiga-api-membership-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "membership-detail"
+                 #'taiga-api-membership-detail-from-alist)))
+    (should (taiga-api-membership-detail-p result))
+    (should (equal "Front" (slot-value result 'role-name)))
+    (should (equal "Alicia Diaz" (slot-value result 'full-name)))
+    (should (equal "accusamus@doloribus.net" (slot-value result 'user-email)))
+    (should (equal "#C0FF33" (slot-value result 'color)))
+    (should (equal "//www.gravatar.com/avatar/e2cc11c9138524224f87aa72c1a343db?size=80" (slot-value result 'photo)))
+    (should (equal "Project Example 0" (slot-value result 'project-name)))
+    (should (equal "user6532909695705815086-project-example-0" (slot-value result 'project-slug)))
+    (should (equal nil (slot-value result 'invited-by)))
+    (should (equal 7 (slot-value result 'id)))
+    (should (equal 8 (slot-value result 'user)))
+    (should (equal 1 (slot-value result 'project)))
+    (should (equal 3 (slot-value result 'role)))
+    (should (equal t (slot-value result 'is-owner)))
+    (should (equal "2014-11-17T16:19:04+0000" (slot-value result 'created-at)))
+    (should (equal nil (slot-value result 'invitation-extra-text)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
