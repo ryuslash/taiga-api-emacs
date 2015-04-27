@@ -683,6 +683,16 @@
     (should (equal 40 (slot-value result 'project)))
     (should (equal nil (slot-value result 'wip-limit)))))
 
+(ert-deftest taiga-api-user-story-custom-attribute-detail-from-alist ()
+  "`taiga-api-user-story-custom-attribute-detail-from-alist' works properly."
+  (with-read-data (result "user-story-custom-attribute-detail")
+    (should (taiga-api-user-story-custom-attribute-detail-p result))
+    (should (equal 1 (slot-value result 'id)))
+    (should (equal "Duration" (slot-value result 'name)))
+    (should (equal "Duration in minutes" (slot-value result 'description)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 1 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()

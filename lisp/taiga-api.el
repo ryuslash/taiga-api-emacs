@@ -630,6 +630,7 @@
   "Turn ARRAY into a list of `taiga-api-project-list-entry'."
   (mapcar #'taiga-api-project-list-entry-from-alist array))
 
+
 (defclass taiga-api-issue-custom-attribute-detail (taiga-api-object)
   ((id :initarg :id)
    (name :initarg :name)
@@ -786,6 +787,17 @@
 (defun taiga-api-user-story-status-detail-from-alist (alist)
   "Turn ALIST into a `taiga-api-user-story-status-detail'."
   (make-instance 'taiga-api-user-story-status-detail :alist alist))
+
+(defclass taiga-api-user-story-custom-attribute-detail (taiga-api-object)
+  ((id :initarg :id)
+   (name :initarg :name)
+   (description :initarg :description)
+   (order :initarg :order)
+   (project :initarg :project)))
+
+(defun taiga-api-user-story-custom-attribute-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-user-story-custom-attribute-detail'."
+  (make-instance 'taiga-api-user-story-custom-attribute-detail :alist alist))
 
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
