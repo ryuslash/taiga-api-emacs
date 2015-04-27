@@ -98,3 +98,10 @@ this to inspect the contents of the buffer."
   "Check that the URL request headers contain the auth token."
   (should (string= (concat "Bearer " token)
                    (cdr (assoc "Authorization" url-request-extra-headers)))))
+
+(cl-defmacro with-read-data ((var name) &rest body)
+  "After storing into VAR the contents of NAME execute BODY."
+  (declare (indent 1))
+  (let ((func (intern (concat "taiga-api-" name "-from-alist"))))
+    `(let ((,var (taiga-api-test--data ,name #',func)))
+       ,@body)))

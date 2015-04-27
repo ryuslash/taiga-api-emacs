@@ -42,9 +42,7 @@
 
 (ert-deftest taiga-api-user-from-alist ()
   "`taiga-api-user-from-alist' works properly."
-  (let ((detail (taiga-api-test--data
-                 "user-authentication-detail"
-                 #'taiga-api-user-authentication-detail-from-alist)))
+  (with-read-data (detail "user-authentication-detail")
     (should (taiga-api-user-authentication-detail-p detail))
     (should (string= (slot-value detail 'auth-token) "eyJ1c2VyX2F1dGhlbnRpY2F0aW9uX2lkIjo3fq:1XmPud:LKXVD9Z0rmHJjiyy0m4YaaHlQS1"))
     (should (string= (slot-value detail 'bio) ""))
@@ -63,8 +61,7 @@
 
 (ert-deftest taiga-api-wiki-page-from-alist ()
   "`taiga-api-wiki-page-from-alist' works properly."
-  (let ((page (taiga-api-test--data
-               "wiki-page" #'taiga-api-wiki-page-from-alist)))
+  (with-read-data (page "wiki-page")
     (should (taiga-api-wiki-page-p page))
     (should (string= (slot-value page 'html) "<p>Lorem ipsum dolor.</p>"))
     (should (= (slot-value page 'editions) 1))
@@ -81,8 +78,7 @@
 
 (ert-deftest taiga-api-user-story-from-alist ()
   "Check that `taiga-api-user-story-from-alist' works properly."
-  (let ((story (taiga-api-test--data
-                "user-story" #'taiga-api-user-story-from-alist)))
+  (with-read-data (story "user-story")
     (should (taiga-api-user-story-p story))
     (should (= (slot-value story 'assigned-to) 19))
     (should (= (slot-value story 'backlog-order) 2))
@@ -124,7 +120,7 @@
 
 (ert-deftest taiga-api-issue-from-alist ()
   "`taiga-api-issue-from-alist' works properly."
-  (let ((issue (taiga-api-test--data "issue" #'taiga-api-issue-from-alist)))
+  (with-read-data (issue "issue")
     (should (taiga-api-issue-p issue))
     (should (= (slot-value issue 'assigned-to) 19))
     (should (string= (slot-value issue 'blocked-note) ""))
@@ -157,16 +153,14 @@
 
 (ert-deftest taiga-api-neighbors-from-alist ()
   "`taiga-api-neighbors-from-alist' works properly."
-  (let ((neighbors (taiga-api-test--data
-                    "neighbors" #'taiga-api-neighbors-from-alist)))
+  (with-read-data (neighbors "neighbors")
     (should (taiga-api-neighbors-p neighbors))
     (should (taiga-api-neighbor-p (taiga-api-neighbors-next neighbors)))
     (should (null (taiga-api-neighbors-previous neighbors)))))
 
 (ert-deftest taiga-api-neighbor-from-alist ()
   "`taiga-api-neighbor-from-alist' works properly."
-  (let ((neighbor (taiga-api-test--data
-                   "neighbor" #'taiga-api-neighbor-from-alist)))
+  (with-read-data (neighbor "neighbor")
     (should (taiga-api-neighbor-p neighbor))
     (should (= (slot-value neighbor 'id) 16))
     (should (= (slot-value neighbor 'ref) 126))
@@ -174,7 +168,7 @@
 
 (ert-deftest taiga-api-task-from-alist ()
   "`taiga-api-task-from-alist' works properly."
-  (let ((task (taiga-api-test--data "task" #'taiga-api-task-from-alist)))
+  (with-read-data (task "task")
     (should (taiga-api-task-p task))
     (should (= (slot-value task 'assigned-to) 19))
     (should (string= (slot-value task 'blocked-note) ""))
@@ -207,8 +201,7 @@
 
 (ert-deftest taiga-api-search-result-from-alist ()
   "`taiga-api-search-result-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "search-results" #'taiga-api-search-result-from-alist)))
+  (with-read-data (result "search-result")
     (should (taiga-api-search-result-p result))
     (mapc (lambda (page) (should (taiga-api-wiki-page-p page)))
           (slot-value result 'wikipages))
@@ -222,9 +215,7 @@
 
 (ert-deftest taiga-api-user-storage-data-from-alist ()
   "`taiga-api-user-storage-data-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "user-storage-data"
-                 #'taiga-api-user-storage-data-from-alist)))
+  (with-read-data (result "user-storage-data")
     (should (taiga-api-user-storage-data-p result))
     (should (string= (slot-value result 'key) "favorite-forest"))
     (should (string= (slot-value result 'value) "Taiga"))
@@ -247,9 +238,7 @@
 
 (ert-deftest taiga-api-project-template-from-alist ()
   "`taiga-api-project-template-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template"
-                 #'taiga-api-project-template-from-alist)))
+  (with-read-data (result "project-template")
     (should (taiga-api-project-template-p result))
     (should (taiga-api-project-template-options-p
              (slot-value result 'default-options)))
@@ -307,9 +296,7 @@
 
 (ert-deftest taiga-api-project-template-options-from-alist ()
   "`taiga-api-project-template-options-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template-options"
-                 #'taiga-api-project-template-options-from-alist)))
+  (with-read-data (result "project-template-options")
     (should (taiga-api-project-template-options-p result))
     (should (string= (slot-value result 'us-status) "New"))
     (should (string= (slot-value result 'points) "?"))
@@ -336,9 +323,7 @@
 
 (ert-deftest taiga-api-project-template-user-story-status-from-alist ()
   "`taiga-api-project-template-user-story-status-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template-user-story-status"
-                 #'taiga-api-project-template-user-story-status-from-alist)))
+  (with-read-data (result "project-template-user-story-status")
     (should (taiga-api-project-template-user-story-status-p result))
     (should (null (slot-value result 'wip-limit)))
     (should (string= (slot-value result 'color) "#999999"))
@@ -372,9 +357,7 @@
 
 (ert-deftest taiga-api-project-template-point-from-alist ()
   "`taiga-api-project-template-point-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template-point"
-                 #'taiga-api-project-template-point-from-alist)))
+  (with-read-data (result "project-template-point")
     (should (taiga-api-project-template-point-p result))
     (should (null (slot-value result 'value)))
     (should (string= (slot-value result 'name) "?"))
@@ -401,9 +384,7 @@
 
 (ert-deftest taiga-api-project-template-status-from-alist ()
   "`taiga-api-project-template-point-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template-status"
-                 #'taiga-api-project-template-status-from-alist)))
+  (with-read-data (result "project-template-status")
     (should (taiga-api-project-template-status-p result))
     (should (string= (slot-value result 'color) "#999999"))
     (should (string= (slot-value result 'name) "New"))
@@ -435,9 +416,7 @@
 
 (ert-deftest taiga-api-project-template-thingy-from-alist ()
   "`taiga-api-project-template-thingy-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template-thingy"
-                 #'taiga-api-project-template-thingy-from-alist)))
+  (with-read-data (result "project-template-thingy")
     (should (taiga-api-project-template-thingy-p result))
     (should (string= (slot-value result 'color) "#cc0000"))
     (should (string= (slot-value result 'name) "Bug"))
@@ -464,9 +443,7 @@
 
 (ert-deftest taiga-api-project-template-role-from-alist ()
   "`taiga-api-project-template-role-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-template-role"
-                 #'taiga-api-project-template-role-from-alist)))
+  (with-read-data (result "project-template-role")
     (should (taiga-api-project-template-role-p result))
     (should (arrayp (slot-value result 'permissions)))
     (should (string= (aref (slot-value result 'permissions) 0) "add_issue"))
@@ -499,9 +476,7 @@
 
 (ert-deftest taiga-api-project-list-entry-from-alist ()
   "`taiga-api-project-list-entry-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-list-entry"
-                 #'taiga-api-project-list-entry-from-alist)))
+  (with-read-data (result "project-list-entry")
     (should (taiga-api-project-list-entry-p result))
     (should (equal [] (slot-value result 'anon-permissions)))
     (should (string= "2014-09-16T15:39:49+0000" (slot-value result 'created-date)))
@@ -567,8 +542,7 @@
 
 (ert-deftest taiga-api-user-detail-from-alist ()
   "`taiga-api-user-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "user-detail" #'taiga-api-user-detail-from-alist)))
+  (with-read-data (result "user-detail")
     (should (taiga-api-user-detail-p result))
     (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80" (slot-value result 'big-photo)))
     (should (string= "" (slot-value result 'bio)))
@@ -586,9 +560,7 @@
 
 (ert-deftest taiga-api-issue-custom-attribute-detail-from-alist ()
   "`taiga-api-issue-custom-attribute-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "issue-custom-attribute-detail"
-                 #'taiga-api-issue-custom-attribute-detail-from-alist)))
+  (with-read-data (result "issue-custom-attribute-detail")
     (should (taiga-api-issue-custom-attribute-detail-p result))
     (should (equal 1 (slot-value result 'id)))
     (should (equal "Duration" (slot-value result 'name)))
@@ -598,9 +570,7 @@
 
 (ert-deftest taiga-api-issue-status-detail-from-alist ()
   "`taiga-api-issue-status-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "issue-status-detail"
-                 #'taiga-api-issue-status-detail-from-alist)))
+  (with-read-data (result "issue-status-detail")
     (should (taiga-api-issue-status-detail-p result))
     (should (equal "#669933" (slot-value result 'color)))
     (should (equal 143 (slot-value result 'id)))
@@ -611,9 +581,7 @@
 
 (ert-deftest taiga-api-issue-type-detail-from-alist ()
   "`taiga-api-issue-type-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "issue-type-detail"
-                 #'taiga-api-issue-type-detail-from-alist)))
+  (with-read-data (result "issue-type-detail")
     (should (taiga-api-issue-type-detail-p result))
     (should (equal "#669933" (slot-value result 'color)))
     (should (equal 143 (slot-value result 'id)))
@@ -623,9 +591,7 @@
 
 (ert-deftest taiga-api-membership-detail-from-alist ()
   "`taiga-api-membership-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "membership-detail"
-                 #'taiga-api-membership-detail-from-alist)))
+  (with-read-data (result "membership-detail")
     (should (taiga-api-membership-detail-p result))
     (should (equal "Front" (slot-value result 'role-name)))
     (should (equal "Alicia Diaz" (slot-value result 'full-name)))
@@ -645,9 +611,7 @@
 
 (ert-deftest taiga-api-point-detail-from-alist ()
   "`taiga-api-point-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "point-detail"
-                 #'taiga-api-point-detail-from-alist)))
+  (with-read-data (result "point-detail")
     (should (taiga-api-point-detail-p result))
     (should (equal "#669933" (slot-value result 'color)))
     (should (equal 143 (slot-value result 'id)))
@@ -658,9 +622,7 @@
 
 (ert-deftest taiga-api-priority-detail-from-alist ()
   "`taiga-api-priority-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "priority-detail"
-                 #'taiga-api-priority-detail-from-alist)))
+  (with-read-data (result "priority-detail")
     (should (taiga-api-priority-detail-p result))
     (should (equal "#669933" (slot-value result 'color)))
     (should (equal 143 (slot-value result 'id)))
@@ -670,9 +632,7 @@
 
 (ert-deftest taiga-api-project-role-from-alist ()
   "`taiga-api-project-role-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "project-role"
-                 #'taiga-api-project-role-from-alist)))
+  (with-read-data (result "project-role")
     (should (taiga-api-project-role-p result))
     (should (equal t (slot-value result 'computable)))
     (should (equal 49 (slot-value result 'id)))
@@ -682,9 +642,7 @@
 
 (ert-deftest taiga-api-severity-detail-from-alist ()
   "`taiga-api-severity-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "severity-detail"
-                 #'taiga-api-severity-detail-from-alist)))
+  (with-read-data (result "severity-detail")
     (should (taiga-api-severity-detail-p result))
     (should (equal "#669933" (slot-value result 'color)))
     (should (equal 143 (slot-value result 'id)))
@@ -694,9 +652,7 @@
 
 (ert-deftest taiga-api-task-custom-attribute-detail-from-alist ()
   "`taiga-api-task-custom-attribute-detail-from-alist' works properly."
-  (let ((result (taiga-api-test--data
-                 "task-custom-attribute-detail"
-                 #'taiga-api-task-custom-attribute-detail-from-alist)))
+  (with-read-data (result "task-custom-attribute-detail")
     (should (taiga-api-task-custom-attribute-detail-p result))
     (should (equal 1 (slot-value result 'id)))
     (should (equal "Duration" (slot-value result 'name)))
@@ -1184,7 +1140,7 @@
   "A successful search returns a `taiga-api-search-result'."
   (let ((taiga-api--auth-token "sometoken"))
     (with-taiga-api-synchronous-response
-        200 nil (taiga-api-test--read "search-results")
+        200 nil (taiga-api-test--read "search-result")
       (let ((result (taiga-api-search 1 "design")))
         (should (taiga-api-search-result-p result))
         (should (arrayp (slot-value result 'wikipages)))
