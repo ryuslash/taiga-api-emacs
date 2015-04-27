@@ -643,6 +643,19 @@
     (should (equal "2014-11-17T16:19:04+0000" (slot-value result 'created-at)))
     (should (equal nil (slot-value result 'invitation-extra-text)))))
 
+(ert-deftest taiga-api-point-detail-from-alist ()
+  "`taiga-api-point-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "point-detail"
+                 #'taiga-api-point-detail-from-alist)))
+    (should (taiga-api-point-detail-p result))
+    (should (equal "#669933" (slot-value result 'color)))
+    (should (equal 143 (slot-value result 'id)))
+    (should (equal "Huge" (slot-value result 'name)))
+    (should (equal 8 (slot-value result 'order)))
+    (should (equal 40 (slot-value result 'value)))
+    (should (equal 3 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
