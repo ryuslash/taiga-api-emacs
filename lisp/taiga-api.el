@@ -657,6 +657,17 @@
   "Turn ALIST into a `taiga-api-attribute'."
   (make-instance 'taiga-api-issue-status-detail :alist alist))
 
+(defclass taiga-api-issue-type-detail (taiga-api-object)
+  ((color :initarg :color)
+   (id :initarg :id)
+   (name :initarg :name)
+   (order :initarg :order)
+   (project :initarg :project)))
+
+(defun taiga-api-issue-type-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-attribute'."
+  (make-instance 'taiga-api-issue-type-detail :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."

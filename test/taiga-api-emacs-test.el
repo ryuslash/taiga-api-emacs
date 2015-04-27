@@ -609,6 +609,18 @@
     (should (equal 1 (slot-value result 'order)))
     (should (equal 40 (slot-value result 'project)))))
 
+(ert-deftest taiga-api-issue-type-detail-from-alist ()
+  "`taiga-api-issue-type-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "issue-type-detail"
+                 #'taiga-api-issue-type-detail-from-alist)))
+    (should (taiga-api-issue-type-detail-p result))
+    (should (equal "#669933" (slot-value result 'color)))
+    (should (equal 143 (slot-value result 'id)))
+    (should (equal "Enhancement" (slot-value result 'name)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 40 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()
