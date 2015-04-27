@@ -558,6 +558,71 @@
     (should (string= "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80" (slot-value result 'photo)))
     (should (string= "beta.tester" (slot-value result 'username)))))
 
+(ert-deftest taiga-api-project-detail-from-alist ()
+  "`taiga-api-project-detail-from-alist' works properly."
+  (with-read-data (result "project-detail")
+    (should (taiga-api-project-detail-p result))
+    (should (equal [] (slot-value result 'anon-permissions)))
+    (should (equal "2014-11-07T12:35:37+0000" (slot-value result 'created-date)))
+    (should (equal 1 (slot-value result 'creation-template)))
+    (should (equal 59 (slot-value result 'default-issue-status)))
+    (should (equal 25 (slot-value result 'default-issue-type)))
+    (should (equal 97 (slot-value result 'default-points)))
+    (should (equal 26 (slot-value result 'default-priority)))
+    (should (equal 43 (slot-value result 'default-severity)))
+    (should (equal 42 (slot-value result 'default-task-status)))
+    (should (equal 42 (slot-value result 'default-us-status)))
+    (should (equal "Taiga" (slot-value result 'description)))
+    (should (equal t (slot-value result 'i-am-owner)))
+    (should (equal 9 (slot-value result 'id)))
+    (should (equal t (slot-value result 'is-backlog-activated)))
+    (should (equal t (slot-value result 'is-issues-activated)))
+    (should (equal nil (slot-value result 'is-kanban-activated)))
+    (should (equal nil (slot-value result 'is-private)))
+    (should (equal t (slot-value result 'is-wiki-activated)))
+    (should (taiga-api-issue-custom-attribute-detail-p
+             (elt (slot-value result 'issue-custom-attributes) 0)))
+    (should (taiga-api-issue-status-detail-p
+             (elt (slot-value result 'issue-statuses) 0)))
+    (should (taiga-api-issue-type-detail-p
+             (elt (slot-value result 'issue-types) 0)))
+    (should (equal [2] (slot-value result 'members)))
+    (should (taiga-api-membership-detail-p
+             (elt (slot-value result 'memberships) 0)))
+    (should (equal "2014-11-07T12:35:38+0000"
+                   (slot-value result 'modified-date)))
+    (should (equal "delete_issue" (elt (slot-value result 'my-permissions) 0)))
+    (should (equal "Beta project" (slot-value result 'name)))
+    (should (equal 2 (slot-value result 'owner)))
+    (should (taiga-api-point-detail-p
+             (elt (slot-value result 'points) 0)))
+    (should (taiga-api-priority-detail-p
+             (elt (slot-value result 'priorities) 0)))
+    (should (equal [] (slot-value result 'public-permissions)))
+    (should (taiga-api-project-role-p
+             (elt (slot-value result 'roles) 0)))
+    (should (taiga-api-severity-detail-p
+             (elt (slot-value result 'severities) 0)))
+    (should (equal "user6532909695705815086-beta-project-4"
+                   (slot-value result 'slug)))
+    (should (equal 0 (slot-value result 'stars)))
+    (should (equal nil (slot-value result 'tags)))
+    (should (equal nil (slot-value result 'tags-colors)))
+    (should (taiga-api-task-custom-attribute-detail-p
+             (elt (slot-value result 'task-custom-attributes) 0)))
+    (should (taiga-api-task-status-detail-p
+             (elt (slot-value result 'task-statuses) 0)))
+    (should (equal 3 (slot-value result 'total-milestones)))
+    (should (equal 20.0 (slot-value result 'total-story-points)))
+    (should (taiga-api-user-story-status-detail-p
+             (elt (slot-value result 'us-statuses) 0)))
+    (should (taiga-api-user-detail-p
+             (elt (slot-value result 'users) 0)))
+    (should (taiga-api-user-story-custom-attribute-detail-p
+             (elt (slot-value result 'userstory-custom-attributes) 0)))
+    (should (equal nil (slot-value result 'videoconferences)))
+    (should (equal nil (slot-value result 'videoconferences-salt)))))
+
 (ert-deftest taiga-api-issue-custom-attribute-detail-from-alist ()
   "`taiga-api-issue-custom-attribute-detail-from-alist' works properly."
   (with-read-data (result "issue-custom-attribute-detail")

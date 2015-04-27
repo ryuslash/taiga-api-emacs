@@ -630,6 +630,106 @@
   "Turn ARRAY into a list of `taiga-api-project-list-entry'."
   (mapcar #'taiga-api-project-list-entry-from-alist array))
 
+(defclass taiga-api-project-detail (taiga-api-object)
+  ((anon-permissions :initarg :anon-permissions)
+   (created-date :initarg :created-date)
+   (creation-template :initarg :creation-template)
+   (default-issue-status :initarg :default-issue-status)
+   (default-issue-type :initarg :default-issue-type)
+   (default-points :initarg :default-points)
+   (default-priority :initarg :default-priority)
+   (default-severity :initarg :default-severity)
+   (default-task-status :initarg :default-task-status)
+   (default-us-status :initarg :default-us-status)
+   (description :initarg :description)
+   (i-am-owner :initarg :i-am-owner)
+   (id :initarg :id)
+   (is-backlog-activated :initarg :is-backlog-activated)
+   (is-issues-activated :initarg :is-issues-activated)
+   (is-kanban-activated :initarg :is-kanban-activated)
+   (is-private :initarg :is-private)
+   (is-wiki-activated :initarg :is-wiki-activated)
+   (issue-custom-attributes :initarg :issue-custom-attributes)
+   (issue-statuses :initarg :issue-statuses)
+   (issue-types :initarg :issue-types)
+   (members :initarg :members)
+   (memberships :initarg :memberships)
+   (modified-date :initarg :modified-date)
+   (my-permissions :initarg :my-permissions)
+   (name :initarg :name)
+   (owner :initarg :owner)
+   (points :initarg :points)
+   (priorities :initarg :priorities)
+   (public-permissions :initarg :public-permissions)
+   (roles :initarg :roles)
+   (severities :initarg :severities)
+   (slug :initarg :slug)
+   (stars :initarg :stars)
+   (tags :initarg :tags)
+   (tags-colors :initarg :tags-colors)
+   (task-custom-attributes :initarg :task-custom-attributes)
+   (task-statuses :initarg :task-statuses)
+   (total-milestones :initarg :total-milestones)
+   (total-story-points :initarg :total-story-points)
+   (us-statuses :initarg :us-statuses)
+   (users :initarg :users)
+   (userstory-custom-attributes :initarg :userstory-custom-attributes)
+   (videoconferences :initarg :videoconferences)
+   (videoconferences-salt :initarg :videoconferences-salt)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-project-detail) slots)
+  (cl-call-next-method)
+
+  (let ((alist (plist-get slots :alist)))
+    (taiga-api--set-bools
+     obj alist
+     '(i-am-owner is-backlog-activated is-issues-activated
+                  is-kanban-activated is-private is-wiki-activated))
+
+    (when alist
+      (setf (slot-value obj 'issue-custom-attributes)
+            (mapcar #'taiga-api-issue-custom-attribute-detail-from-alist
+                    (cdr (assq 'issue_custom_attributes alist))))
+      (setf (slot-value obj 'issue-statuses)
+            (mapcar #'taiga-api-issue-status-detail-from-alist
+                    (cdr (assq 'issue_statuses alist))))
+      (setf (slot-value obj 'issue-types)
+            (mapcar #'taiga-api-issue-type-detail-from-alist
+                    (cdr (assq 'issue_types alist))))
+      (setf (slot-value obj 'memberships)
+            (mapcar #'taiga-api-membership-detail-from-alist
+                    (cdr (assq 'memberships alist))))
+      (setf (slot-value obj 'points)
+            (mapcar #'taiga-api-point-detail-from-alist
+                    (cdr (assq 'points alist))))
+      (setf (slot-value obj 'priorities)
+            (mapcar #'taiga-api-priority-detail-from-alist
+                    (cdr (assq 'priorities alist))))
+      (setf (slot-value obj 'roles)
+            (mapcar #'taiga-api-project-role-from-alist
+                    (cdr (assq 'roles alist))))
+      (setf (slot-value obj 'severities)
+            (mapcar #'taiga-api-severity-detail-from-alist
+                    (cdr (assq 'severities alist))))
+      (setf (slot-value obj 'task-custom-attributes)
+            (mapcar #'taiga-api-task-custom-attribute-detail-from-alist
+                    (cdr (assq 'task_custom_attributes alist))))
+      (setf (slot-value obj 'task-statuses)
+            (mapcar #'taiga-api-task-status-detail-from-alist
+                    (cdr (assq 'task_statuses alist))))
+      (setf (slot-value obj 'us-statuses)
+            (mapcar #'taiga-api-user-story-status-detail-from-alist
+                    (cdr (assq 'us_statuses alist))))
+      (setf (slot-value obj 'users)
+            (mapcar #'taiga-api-user-detail-from-alist
+                    (cdr (assq 'users alist))))
+      (setf (slot-value obj 'userstory-custom-attributes)
+            (mapcar #'taiga-api-user-story-custom-attribute-detail-from-alist
+                    (cdr (assq 'userstory_custom_attributes alist)))))))
+
+(defun taiga-api-project-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-project-detail'."
+  (make-instance 'taiga-api-project-detail :alist alist))
 
 (defclass taiga-api-issue-custom-attribute-detail (taiga-api-object)
   ((id :initarg :id)
