@@ -692,6 +692,18 @@
     (should (equal 1 (slot-value result 'order)))
     (should (equal 40 (slot-value result 'project)))))
 
+(ert-deftest taiga-api-task-custom-attribute-detail-from-alist ()
+  "`taiga-api-task-custom-attribute-detail-from-alist' works properly."
+  (let ((result (taiga-api-test--data
+                 "task-custom-attribute-detail"
+                 #'taiga-api-task-custom-attribute-detail-from-alist)))
+    (should (taiga-api-task-custom-attribute-detail-p result))
+    (should (equal 1 (slot-value result 'id)))
+    (should (equal "Duration" (slot-value result 'name)))
+    (should (equal "Duration in minutes" (slot-value result 'description)))
+    (should (equal 1 (slot-value result 'order)))
+    (should (equal 1 (slot-value result 'project)))))
+
 ;;; Auth
 
 (ert-deftest taiga-api-unsuccessful-normal-login ()

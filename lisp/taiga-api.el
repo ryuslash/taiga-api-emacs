@@ -743,6 +743,17 @@
   "Turn ALIST into a `taiga-api-severity-detail'."
   (make-instance 'taiga-api-severity-detail :alist alist))
 
+(defclass taiga-api-task-custom-attribute-detail (taiga-api-object)
+  ((id :initarg :id)
+   (name :initarg :name)
+   (description :initarg :description)
+   (order :initarg :order)
+   (project :initarg :project)))
+
+(defun taiga-api-task-custom-attribute-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-task-custom-attribute-detail'."
+  (make-instance 'taiga-api-task-custom-attribute-detail :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
