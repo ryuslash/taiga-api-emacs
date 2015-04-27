@@ -754,6 +754,22 @@
   "Turn ALIST into a `taiga-api-task-custom-attribute-detail'."
   (make-instance 'taiga-api-task-custom-attribute-detail :alist alist))
 
+(defclass taiga-api-task-status-detail (taiga-api-object)
+  ((color :initarg :color)
+   (id :initarg :id)
+   (is-closed :initarg :is-closed)
+   (name :initarg :name)
+   (order :initarg :order)
+   (project :initarg :project)))
+
+(cl-defmethod shared-initialize ((obj taiga-api-task-status-detail) slots)
+  (cl-call-next-method)
+  (taiga-api--set-bools obj (plist-get slots :alist) '(is-closed)))
+
+(defun taiga-api-task-status-detail-from-alist (alist)
+  "Turn ALIST into a `taiga-api-task-status-detail'."
+  (make-instance 'taiga-api-task-status-detail :alist alist))
+
 (eval-when-compile
   (defun taiga-api--make-parameter-cons (param pvar)
     "Turn PARAM into a cons and join it to PVAR."
