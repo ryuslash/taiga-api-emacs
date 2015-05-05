@@ -1395,5 +1395,46 @@ list of `taiga-api-project-template-role' instances."
   (taiga-api-with-get-request "projects" ()
     (200 (taiga-api--get-object #'taiga-api-many-project-list-entry-from-array))))
 
+(defun taiga-api-create-project
+    (name description &optional creation-template is-backlog-activated
+          is-issues-activated is-kanban-activated is-private
+          is-wiki-activated videoconferences videoconferences-salt
+          total-milestones total-story-points)
+  "Create a new project.
+
+NAME is the name of the new project.  DESCRIPTION is the
+description.  CREATION-TEMPLATE is an integer, specifying the
+base template for the project.  IS-BACKLOG-ACTIVATED,
+IS-ISSUES-ACTIVATED and IS-KANBAN-ACTIVATED are booleans that
+specify whether the backlog, issues and kanban boards should be
+enabled, respectively.  IS-PRIVATE is a boolean that specifies if
+the project is private or public.  IS-WIKI-ACTIVATED is a boolean
+value that specifies whether the wiki should be enabled.
+VIDEOCONFERENCES may be either \"appear-in\" or \"talky\" and
+specifies which 3rd-party application should be used for
+videoconferencing.  VIDEOCONFERENCES-SALT is an arbitrary string
+value that will be used in the videoconference url generation.
+TOTAL-MILESTONES is the number of milestones the project will
+have.  TOTAL-STORY-POINTS is the number of story points that must
+be worked through for the project to be finished."
+  (taiga-api--check-authentication)
+
+  (unless is-backlog-activated (setq is-backlog-activated :json-false))
+  (unless is-kanban-activated (setq is-kanban-activated :json-false))
+  (unless is-issues-activated (setq is-issues-activated :json-false))
+  (unless is-private (setq is-private :json-false))
+  (unless is-wiki-activated (setq is-wiki-activated :json-false))
+
+  (let ((url-request-extra-headers
+         `(("Authorization" . ,(concat "Bearer " taiga-api--auth-token)))))
+    (taiga-api-with-post-request "projects"
+        (name description creation-template is-backlog-activated
+              is-issues-activated is-kanban-activated is-private
+              is-wiki-activated videoconferences videoconferences-salt
+              total-milestones total-story-points)
+      (201 (taiga-api--get-object #'taiga-api-project-detail-from-alist))
+      (400 (signal 'taiga-api-error
+                   (taiga-api--get-object #'taiga-api-error-from-alist))))))
+
 (provide 'taiga-api)
 ;;; taiga-api.el ends here

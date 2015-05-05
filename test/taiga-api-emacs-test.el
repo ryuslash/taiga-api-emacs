@@ -1870,5 +1870,64 @@
 (taiga-api-test-unauthenticated (taiga-api-list-project))
 (taiga-api-test-throttling (taiga-api-list-project))
 
+(ert-deftest taiga-api-create-project-request ()
+  "Request parameters for creating projects are setup correctly."
+  (let ((func-used 0)
+        (taiga-api--auth-token "sometoken"))
+    (cl-letf (((symbol-function 'url-retrieve-synchronously)
+               (lambda (url &rest args)
+                 (cl-incf func-used)
+                 (should (string= "https://api.taiga.io/api/v1/projects" url))
+                 (should-have-auth-token "sometoken")
+                 (should (string= (json-encode
+                                   '((total_story_points . 20.0)
+                                     (total_milestones . 3)
+                                     (videoconferences . "appear-in")
+                                     (is_wiki_activated . t)
+                                     (is_private . :json-false)
+                                     (is_kanban_activated . t)
+                                     (is_issues_activated . t)
+                                     (is_backlog_activated . :json-false)
+                                     (creation_template . 1)
+                                     (description . "Beta description")
+                                     (name . "Beta project")))
+                                  url-request-data))
+                 (with-current-buffer (generate-new-buffer "taiga-api-http-test")
+                   (insert "HTTP/1.1 201 CREATED\n"
+                           "\n"
+                           "{\"foo\": \"bar\"}")
+                   (current-buffer)))))
+      (taiga-api-create-project "Beta project" "Beta description" 1 nil
+                                t t nil t "appear-in" nil 3 20.0))
+    (should (= func-used 1))))
+
+(ert-deftest taiga-api-successful-create-project ()
+  "A successful project creation returns a `taiga-api-project-detail'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        201 nil (taiga-api-test--read "project-detail")
+      (let ((result (taiga-api-create-project
+                     "Beta project" "Beta description" 1 nil t t nil t
+                     "appear-in" nil 3 20.0)))
+        (should (taiga-api-project-detail-p result))))))
+
+(ert-deftest taiga-api-unsuccessful-create-project ()
+  "An unsuccessful project creation signals `taiga-api-error'."
+  (let ((taiga-api--auth-token "sometoken"))
+    (with-taiga-api-synchronous-response
+        400 nil (taiga-api--json-encoded-error)
+      (should-error (taiga-api-create-project
+                     "Beta project" "Beta description" 1 nil
+                     t t nil t "appear-in" nil 3 20.0)
+                    :type 'taiga-api-error)
+      (should-not (buffer-live-p taiga-api-test-buffer)))))
+
+(taiga-api-test-unauthenticated
+ (taiga-api-create-project "Beta project" "Beta description" 1 nil
+                           t t nil t "appear-in" nil 3 20.0))
+(taiga-api-test-throttling
+ (taiga-api-create-project "Beta project" "Beta description" 1 nil
+                           t t nil t "appear-in" nil 3 20.0))
+
 (provide 'taiga-api-emacs-test)
 ;;; taiga-api-emacs-test.el ends here
