@@ -26,10 +26,6 @@
 
 (require 'taiga-api)
 
-(defconst taiga-api-test--location
-  (file-name-directory (or load-file-name
-                           buffer-file-name)))
-
 (ert-deftest taiga-api-error-from-alist ()
   "`taiga-api-error-from-alist' works properly."
   (let ((err (with-temp-buffer

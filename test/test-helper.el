@@ -2,6 +2,9 @@
 
 (defvar taiga-api-test-buffer nil)
 
+(defconst taiga-api-test--location
+  (file-name-directory (or load-file-name
+                           buffer-file-name)))
 (eval-when-compile
   (defun taiga-api--status-name (code)
     (let ((status (assoc code '((200 . "OK")
