@@ -26,35 +26,6 @@
 
 (require 'taiga-api)
 
-(ert-deftest taiga-api-error-from-alist ()
-  "`taiga-api-error-from-alist' works properly."
-  (let ((err (with-temp-buffer
-               (insert "{\"_error_message\": \"foo\", \"_error_type\": \"bar\"}")
-               (goto-char (point-min))
-               (taiga-api-error-from-alist (json-read)))))
-    (should (taiga-api-error-p err))
-    (should (string= (taiga-api-error-message err) "foo"))
-    (should (string= (taiga-api-error-type err) "bar"))))
-
-(ert-deftest taiga-api-user-from-alist ()
-  "`taiga-api-user-from-alist' works properly."
-  (with-read-data (detail "user-authentication-detail")
-    (should (taiga-api-user-authentication-detail-p detail))
-    (should (string= (slot-value detail 'auth-token) "eyJ1c2VyX2F1dGhlbnRpY2F0aW9uX2lkIjo3fq:1XmPud:LKXVD9Z0rmHJjiyy0m4YaaHlQS1"))
-    (should (string= (slot-value detail 'bio) ""))
-    (should (string= (slot-value detail 'is-active) t))
-    (should (string= (slot-value detail 'email) "beta.testing@taiga.io"))
-    (should (null (slot-value detail 'github-id)))
-    (should (string= (slot-value detail 'color) "#FC8EAC"))
-    (should (string= (slot-value detail 'lang) ""))
-    (should (string= (slot-value detail 'full-name-display) "Beta testing"))
-    (should (string= (slot-value detail 'timezone) ""))
-    (should (= (slot-value detail 'id) 7))
-    (should (string= (slot-value detail 'full-name) "Beta testing"))
-    (should (string= (slot-value detail 'photo) "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"))
-    (should (string= (slot-value detail 'username) "beta.tester"))
-    (should (string= (slot-value detail 'big-photo) "//www.gravatar.com/avatar/4648b6d514c3ecece1b87136ceeda1d1?size=80"))))
-
 (ert-deftest taiga-api-wiki-page-from-alist ()
   "`taiga-api-wiki-page-from-alist' works properly."
   (with-read-data (page "wiki-page")

@@ -108,3 +108,12 @@ this to inspect the contents of the buffer."
   (let ((func (intern (concat "taiga-api-" name "-from-alist"))))
     `(let ((,var (taiga-api-test--data ,name #',func)))
        ,@body)))
+
+(defmacro with-subject (subject &rest body)
+  (declare (indent 1))
+  `(progn
+     (before-each (setq subject ,subject))
+     ,@body))
+
+(defun its (slot)
+  (slot-value subject slot))
