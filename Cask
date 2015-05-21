@@ -6,4 +6,5 @@
 (files "lisp/taiga-api.el")
 
 (development
- (depends-on "ert-runner"))
+ (depends-on "ert-runner")
+ (depends-on "buttercup"))
