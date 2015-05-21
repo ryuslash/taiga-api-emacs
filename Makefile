@@ -11,5 +11,8 @@ all: lisp/taiga-api.elc
 test:
 	$(CASK_EXEC) ert-runner -L lisp/
 
+check:
+	$(CASK_EXEC) buttercup -L lisp/ -L test/ -l test-helper
+
 clean:
 	rm lisp/taiga-api.elc
