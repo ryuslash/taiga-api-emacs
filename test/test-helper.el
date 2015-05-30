@@ -111,9 +111,5 @@ this to inspect the contents of the buffer."
 
 (defmacro with-subject (subject &rest body)
   (declare (indent 1))
-  `(progn
-     (before-each (setq subject ,subject))
+  `(macrolet ((its (slot) (list 'slot-value ',subject slot)))
      ,@body))
-
-(defun its (slot)
-  (slot-value subject slot))
