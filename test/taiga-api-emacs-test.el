@@ -26,13 +26,6 @@
 
 (require 'taiga-api)
 
-(ert-deftest taiga-api-neighbors-from-alist ()
-  "`taiga-api-neighbors-from-alist' works properly."
-  (with-read-data (neighbors "neighbors")
-    (should (taiga-api-neighbors-p neighbors))
-    (should (taiga-api-neighbor-p (taiga-api-neighbors-next neighbors)))
-    (should (null (taiga-api-neighbors-previous neighbors)))))
-
 (ert-deftest taiga-api-neighbor-from-alist ()
   "`taiga-api-neighbor-from-alist' works properly."
   (with-read-data (neighbor "neighbor")

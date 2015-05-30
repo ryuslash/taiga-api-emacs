@@ -124,3 +124,11 @@
       (it "includes its votes" (expect (its 'votes) :to-be nil))
       (it "includes its neighbours"
         (expect (taiga-api-neighbors-p (its 'neighbors)) :to-be-truthy)))))
+
+(describe "Reading neighbours from an alist"
+  (with-read-data (neighbors "neighbors")
+    (it "yields neighbours" (expect (taiga-api-neighbors-p neighbors)))
+    (it "includes the next neighbor"
+      (expect (taiga-api-neighbor-p (taiga-api-neighbors-next neighbors)) :to-be-truthy))
+    (it "includes the previous neighbor"
+      (expect (taiga-api-neighbor-p (taiga-api-neighbors-previous neighbors)) :to-be nil))))
