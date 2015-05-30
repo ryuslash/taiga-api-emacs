@@ -127,8 +127,16 @@
 
 (describe "Reading neighbours from an alist"
   (with-read-data (neighbors "neighbors")
-    (it "yields neighbours" (expect (taiga-api-neighbors-p neighbors)))
+    (it "yields neighbours" (expect (taiga-api-neighbors-p neighbors) :to-be-truthy))
     (it "includes the next neighbor"
       (expect (taiga-api-neighbor-p (taiga-api-neighbors-next neighbors)) :to-be-truthy))
     (it "includes the previous neighbor"
       (expect (taiga-api-neighbor-p (taiga-api-neighbors-previous neighbors)) :to-be nil))))
+
+(describe "Reading a neighbor from an alist"
+  (with-read-data (neighbor "neighbor")
+    (with-subject neighbor
+      (it "yields a neighbor" (expect (taiga-api-neighbor-p neighbor) :to-be-truthy))
+      (it "includes its id" (expect (its 'id) :to-be 16))
+      (it "includes a reference" (expect (its 'ref) :to-be 126))
+      (it "includes a subject" (expect (its 'subject) :to-equal "Support for bulk actions")))))

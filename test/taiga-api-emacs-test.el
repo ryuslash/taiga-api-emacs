@@ -26,14 +26,6 @@
 
 (require 'taiga-api)
 
-(ert-deftest taiga-api-neighbor-from-alist ()
-  "`taiga-api-neighbor-from-alist' works properly."
-  (with-read-data (neighbor "neighbor")
-    (should (taiga-api-neighbor-p neighbor))
-    (should (= (slot-value neighbor 'id) 16))
-    (should (= (slot-value neighbor 'ref) 126))
-    (should (string= (slot-value neighbor 'subject) "Support for bulk actions"))))
-
 (ert-deftest taiga-api-task-from-alist ()
   "`taiga-api-task-from-alist' works properly."
   (with-read-data (task "task")
